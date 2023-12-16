@@ -5,7 +5,6 @@
 using namespace std;
 
 class Airport {
-private:
     string code, name, city, country;
     float latitude;
     float longitude;
@@ -17,6 +16,7 @@ public:
     string getCountry();
     float getLatitude() const;
     float getLongitude() const;
+    bool operator == (const Airport &airport) const;
 };
 
 #endif //FLIGHTMANAGEMENT_AIRPORT_H

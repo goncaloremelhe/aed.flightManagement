@@ -27,7 +27,8 @@ void FlightManagement::readAirline() {
         getline(iss, country, ',');
 
         Airline tempAirline(code, name, callSign, country);
-        airline.push_back(tempAirline);
+        airlineMap[code] = new Airline(tempAirline);
+
     }
 }
 
@@ -55,7 +56,8 @@ void FlightManagement::readAirport() {
         float newLongitude = stof(longitude);
 
         Airport tempAirport(code, name, city, country, newLatitude, newLongitude);
-        airport.push_back(tempAirport);
+        flightManagement.addVertex(code);
+        airportMap[code] = new Airport(tempAirport);
     }
 }
 
@@ -66,21 +68,40 @@ void FlightManagement::readFlight() {
         return;
     }
 
-    /*
     string line;
     getline(input, line);
 
     while (getline(input, line)) {
 
+        istringstream iss(line);
+        string source, target, airline;
+        getline(iss, source, ',');
+        getline(iss, target, ',');
+        getline(iss, airline, ',');
+
+        flightManagement.addEdge(source,target,0,airline);
     }
-     */
 }
 
-vector<Airport> FlightManagement::getAirports() {
-    return airport;
+FlightManagement::~FlightManagement() {
+    for (auto const& airline : airlineMap) {
+        delete airline.second;
+    }
+
+    for (auto const& airport : airportMap) {
+        delete airport.second;
+    }
 }
 
-vector<Airline> FlightManagement::getAirlines() {
-    return airline;
+Graph<string> FlightManagement::getGraph() {
+    return flightManagement;
+}
+
+unordered_map<string, Airport *> FlightManagement::getAirportMap() {
+    return airportMap;
+}
+
+unordered_map<string, Airline *> FlightManagement::getAirlineMap() {
+    return airlineMap;
 }
 

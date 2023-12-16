@@ -9,4 +9,5 @@ add_executable(flightManagement main.cpp
         src/header/Airline.h
         src/header/Airport.h
         src/definition/Airport.cpp
-        src/definition/Airline.cpp)
+        src/definition/Airline.cpp
+        src/header/Graph.h)

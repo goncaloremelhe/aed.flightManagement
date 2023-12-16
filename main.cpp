@@ -7,9 +7,11 @@ int main() {
     flightManagement.readAirline();
     flightManagement.readFlight();
 
-    //Para já esta a guardar Aeroportos e companhias em vetores
-    //Temos de fazer isto em Grafos
-    //readFlights por implementar
-
+    for (int i = 0; i < 40; i++) {
+        Vertex<string>* v = flightManagement.getGraph().getVertexSet().at(i);
+        unordered_map<string, Airport*> mapa = flightManagement.getAirportMap();
+        Airport* airport = mapa[v->getInfo()];
+        cout << airport->getCode() << " " << airport->getName() << " " << airport->getCountry() << " " << airport->getCity() << "\n";
+    }
     return 0;
 }
