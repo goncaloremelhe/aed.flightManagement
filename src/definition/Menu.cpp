@@ -10,7 +10,7 @@ void printStatisticsMenu(const FlightManagement& flightManagement){
     cout << "1 - Check global number of airports" << endl;
     cout << "2 - Check global number of available flights" << endl;
     cout << "3 - Check number of flights per airport, city or airline" << endl;
-    cout << "4 - Check destination options per airport or city" << endl;
+    cout << "4 - Check number of different countries connected to a specific airport or city" << endl;
     cout << "--------------------------------------------------\n";
     cout << "Option: ";
     int option = 0;
@@ -147,10 +147,10 @@ void printNumberFlightsMenu(const FlightManagement& flightManagement){
 
 void printDestinationOptionsMenu(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
-    cout << "You chose to check destination options!" << endl;
+    cout << "You chose to check how many different countries are connected to a specific airport or city!" << endl;
     cout << "Choose one option:" << endl;
-    cout << "1 - Check destinations countries out of an airport" << endl;
-    cout << "2 - Check destinations countries out of a city" << endl;
+    cout << "1 - Check number of different countries that a given airport flies to" << endl;
+    cout << "2 - Check number of different countries that a given city flies to" << endl;
     cout << "--------------------------------------------------\n";
     cout << "Option: ";
     int option = 0;
