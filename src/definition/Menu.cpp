@@ -1,5 +1,6 @@
 
 #include "../header/Menu.h"
+#include <unordered_set>
 #include <iostream>
 #include <set>
 
@@ -36,7 +37,7 @@ void printStatisticsMenu(const FlightManagement& flightManagement){
             printNumberFlightsMenu(flightManagement);
             break;
         case 4:
-            printDestinationOptionsMenu(flightManagement);
+            printCountriesOptionsMenu(flightManagement);
             break;
         default:
             cout << "Invalid option. Exiting." << endl;
@@ -145,7 +146,7 @@ void printNumberFlightsMenu(const FlightManagement& flightManagement){
         }
 }
 
-void printDestinationOptionsMenu(const FlightManagement& flightManagement){
+void printCountriesOptionsMenu(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
     cout << "You chose to check how many different countries are connected to a specific airport or city!" << endl;
     cout << "Choose one option:" << endl;
@@ -157,6 +158,43 @@ void printDestinationOptionsMenu(const FlightManagement& flightManagement){
     cin >> option;
     switch (option){
         case 1: {
+            cout << "Enter the code of the airport: ";
+            string airportCode;
+            cin >> airportCode;
+
+            Graph<string> graph = flightManagement.getGraph();
+            vector<Vertex<string>*> nodes = graph.getVertexSet();
+            unordered_set<string> airports;
+
+            for (auto node : nodes) {
+                if (node->getInfo() == airportCode) {
+                    for (auto edge : node->getAdj()) {
+                        string destinationAirportCode = edge.getDest()->getInfo();
+                        airports.insert(destinationAirportCode);
+                    }
+                }
+            }
+
+            unordered_map<string, Airport*> allAirports = flightManagement.getAirportMap();
+            set<string> countries;
+            for (auto destinationAirport : airports){
+                for (auto element : allAirports){
+                    if(element.first == destinationAirport){
+                        countries.insert(element.second->getCountry());
+                    }
+                }
+            }
+
+            int numCountries = countries.size();
+            cout << "The airport " << airportCode << " is connected to " << numCountries << " different countries." << endl;
+            cout << " Do you want to consult which countries are available? [Y/N]" << endl;
+            char answer;
+            cin >> answer;
+            if (answer == 'Y' || answer == 'y'){
+                for (auto destination : countries){
+                    cout << destination << endl;
+                }
+            }
         }
             break;
         case 2: {

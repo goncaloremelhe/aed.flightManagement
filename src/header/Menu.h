@@ -7,7 +7,7 @@
 
 void printStatisticsMenu(const FlightManagement& flightManagement);
 void printNumberFlightsMenu (const FlightManagement& flightManagement);
-void printDestinationOptionsMenu(const FlightManagement& flightManagement);
+void printCountriesOptionsMenu(const FlightManagement& flightManagement);
 
 
 #endif //FLIGHTMANAGEMENT_MENU_H
