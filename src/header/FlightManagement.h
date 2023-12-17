@@ -18,7 +18,7 @@ public:
     void readAirline();
     void readAirport();
     void readFlight();
-    Graph<string> getGraph();
+    Graph<string> getGraph() const;
     unordered_map<string, Airport*> getAirportMap() const;
     unordered_map<string, Airline*> getAirlineMap() const;
 };

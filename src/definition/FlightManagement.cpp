@@ -93,7 +93,7 @@ FlightManagement::~FlightManagement() {
     }
 }
 
-Graph<string> FlightManagement::getGraph() {
+Graph<string> FlightManagement::getGraph() const{
     return flightManagement;
 }
 
