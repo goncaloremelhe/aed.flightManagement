@@ -44,7 +44,7 @@ void printNumberFlightsMenu(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
     cout << "You chose to check number of flights!" << endl;
     cout << "Choose one option:" << endl;
-    cout << "1 - Check number of flights of an airport" << endl;
+    cout << "1 - Check number of flights out of an airport" << endl;
     cout << "2 - Check number of flights per city" << endl;
     cout << "3 - Check number of flights per airline" << endl;
     cout << "--------------------------------------------------\n";
@@ -63,7 +63,7 @@ void printNumberFlightsMenu(const FlightManagement& flightManagement){
 
             for (auto node : nodes){
                 if(node->getInfo() == airportCode){
-                    cout << "The number of flights out of the Airport " + airportCode + " is " + to_string(node->getAdj().size()) << endl;
+                    cout << "The number of flights out of the Airport " << airportCode << " is " << node->getAdj().size() << endl;
 
                     set<string> uniqueAirlines;
                     for (auto edge : node->getAdj()) {
@@ -76,7 +76,46 @@ void printNumberFlightsMenu(const FlightManagement& flightManagement){
             }
         }
             break;
-        case 2:
+        case 2:{
+            cout << "Enter the name of the city: ";
+            string cityName;
+            cin >> cityName;
+            int numFlightsToCity = 0;
+            int numFlightsOutCity = 0;
+
+            Graph<string> graph = flightManagement.getGraph();
+            vector<Vertex<string>*> nodes = graph.getVertexSet();
+            unordered_map<string, Airport*> airports = flightManagement.getAirportMap();
+            vector<string> airportsOfCity;
+
+            //Primeiro confere quais os aeroportos da cidade
+            for (auto element : airports){
+                if(element.second->getCity() == cityName){
+                    airportsOfCity.push_back(element.first);
+                }
+            }
+
+            //Depois confere quantos voos saem e chegam desses aeroportos
+            for (auto airportCode : airportsOfCity){
+                cout << airportCode << endl;
+                for (auto node : nodes){
+                    if(node->getInfo() == airportCode){
+                        numFlightsOutCity += node->getAdj().size();}
+                    else {
+                        for (auto dest : node->getAdj()){
+                            if (dest.getDest()->getInfo() == airportCode){
+                                numFlightsToCity++;
+                            }
+                        }
+                    }
+                }
+                cout << numFlightsToCity << endl;
+            }
+            cout << "--------------------------------------------------\n";
+            cout << "The number of flights involving the city " << cityName << " is " << (numFlightsToCity + numFlightsOutCity) << '.' << endl;
+            cout << " There are " << numFlightsOutCity << " flights leaving the city." << endl;
+            cout << " There are " << numFlightsToCity << " flights arriving in the city." << endl;
+        }
             break;
         case 3:
             break;
