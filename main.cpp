@@ -1,5 +1,6 @@
 #include <iostream>
 #include "src/header/FlightManagement.h"
+#include "src/header/Menu.h"
 
 int main() {
     FlightManagement flightManagement;
@@ -13,5 +14,8 @@ int main() {
         Airport* airport = mapa[v->getInfo()];
         cout << airport->getCode() << " " << airport->getName() << " " << airport->getCountry() << " " << airport->getCity() << "\n";
     }
+
+    printStatisticsMenu(flightManagement);
+
     return 0;
 }

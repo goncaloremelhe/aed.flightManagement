@@ -97,11 +97,11 @@ Graph<string> FlightManagement::getGraph() {
     return flightManagement;
 }
 
-unordered_map<string, Airport *> FlightManagement::getAirportMap() {
+unordered_map<string, Airport *> FlightManagement::getAirportMap() const {
     return airportMap;
 }
 
-unordered_map<string, Airline *> FlightManagement::getAirlineMap() {
+unordered_map<string, Airline *> FlightManagement::getAirlineMap() const{
     return airlineMap;
 }
 
