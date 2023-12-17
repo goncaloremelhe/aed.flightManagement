@@ -97,7 +97,6 @@ void printNumberFlightsMenu(const FlightManagement& flightManagement){
 
             //Depois confere quantos voos saem e chegam desses aeroportos
             for (auto airportCode : airportsOfCity){
-                cout << airportCode << endl;
                 for (auto node : nodes){
                     if(node->getInfo() == airportCode){
                         numFlightsOutCity += node->getAdj().size();}
@@ -109,7 +108,6 @@ void printNumberFlightsMenu(const FlightManagement& flightManagement){
                         }
                     }
                 }
-                cout << numFlightsToCity << endl;
             }
             cout << "--------------------------------------------------\n";
             cout << "The number of flights involving the city " << cityName << " is " << (numFlightsToCity + numFlightsOutCity) << '.' << endl;
@@ -117,7 +115,25 @@ void printNumberFlightsMenu(const FlightManagement& flightManagement){
             cout << " There are " << numFlightsToCity << " flights arriving in the city." << endl;
         }
             break;
-        case 3:
+        case 3:{
+            cout << "Enter the airline's code: ";
+            string airlineCode;
+            cin >> airlineCode;
+            int numFlightsAirline = 0;
+
+            Graph<string> graph = flightManagement.getGraph();
+            vector<Vertex<string>*> nodes = graph.getVertexSet();
+
+            for (auto node : nodes){
+                for (auto edge : node->getAdj()){
+                    if (edge.getAirline() == airlineCode){
+                        numFlightsAirline++;
+                    }
+                }
+            }
+
+            cout << "The number of flights operated by " << airlineCode << " is " << numFlightsAirline << '.' << endl;
+        }
             break;
         default:
             cout << "Invalid option. Exiting." << endl;
