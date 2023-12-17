@@ -198,6 +198,52 @@ void printCountriesOptionsMenu(const FlightManagement& flightManagement){
         }
             break;
         case 2: {
+            cout << "Enter the name of the city: ";
+            string cityName;
+            cin >> cityName;
+
+            Graph<string> graph = flightManagement.getGraph();
+            vector<Vertex<string>*> nodes = graph.getVertexSet();
+            unordered_map<string, Airport*> allAirports = flightManagement.getAirportMap();
+            vector<string> airportsOfCity;
+
+            for (auto element : allAirports) {
+                if(element.second->getCity() == cityName){
+                    airportsOfCity.push_back(element.first);
+                }
+            }
+
+
+            unordered_set<string> airportsDestination;
+            for (auto airport : airportsOfCity) {
+                for (auto node : nodes){
+                    if (node->getInfo() == airport){
+                        for (auto edge : node->getAdj()){
+                            airportsDestination.insert(edge.getDest()->getInfo());
+                        }
+                    }
+                }
+            }
+
+            set<string> countries;
+            for (auto destinationAirport : airportsDestination){
+                for (auto element : allAirports){
+                    if(element.first == destinationAirport){
+                        countries.insert(element.second->getCountry());
+                    }
+                }
+            }
+
+            int numCountries = countries.size();
+            cout << "The city " << cityName << " is connected to " << numCountries << " different countries." << endl;
+            cout << " Do you want to consult which countries are available? [Y/N]" << endl;
+            char answer;
+            cin >> answer;
+            if (answer == 'Y' || answer == 'y') {
+                for (auto destination : countries) {
+                    cout << destination << endl;
+                }
+            }
         }
             break;
         default:
