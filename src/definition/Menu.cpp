@@ -10,6 +10,7 @@ void printStatisticsMenu(const FlightManagement& flightManagement){
     cout << "1 - Check global number of airports" << endl;
     cout << "2 - Check global number of available flights" << endl;
     cout << "3 - Check number of flights per airport, city or airline" << endl;
+    cout << "4 - Check destination options per airport or city" << endl;
     cout << "--------------------------------------------------\n";
     cout << "Option: ";
     int option = 0;
@@ -33,6 +34,9 @@ void printStatisticsMenu(const FlightManagement& flightManagement){
             break;
         case 3:
             printNumberFlightsMenu(flightManagement);
+            break;
+        case 4:
+            printDestinationOptionsMenu(flightManagement);
             break;
         default:
             cout << "Invalid option. Exiting." << endl;
@@ -139,4 +143,27 @@ void printNumberFlightsMenu(const FlightManagement& flightManagement){
             cout << "Invalid option. Exiting." << endl;
             break;
         }
+}
+
+void printDestinationOptionsMenu(const FlightManagement& flightManagement){
+    cout << "--------------------------------------------------\n";
+    cout << "You chose to check destination options!" << endl;
+    cout << "Choose one option:" << endl;
+    cout << "1 - Check destinations countries out of an airport" << endl;
+    cout << "2 - Check destinations countries out of a city" << endl;
+    cout << "--------------------------------------------------\n";
+    cout << "Option: ";
+    int option = 0;
+    cin >> option;
+    switch (option){
+        case 1: {
+        }
+            break;
+        case 2: {
+        }
+            break;
+        default:
+            cout << "Invalid option. Exiting." << endl;
+            break;
+    }
 }
