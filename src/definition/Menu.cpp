@@ -101,16 +101,14 @@ void printDestionationOptionMenu(const FlightManagement& flightManagement){
     int option = 0;
     cin >> option;
     switch (option) {
-        case 1: {
-        }
+        case 1:
+            printNumAirports_perAirport(flightManagement);
             break;
-        case 2:{
-
-        }
+        case 2:
+            //printNumCities_perAirport(flightManagement);
             break;
-        case 3:{
-
-        }
+        case 3:
+            printNumCountries_perAirport(flightManagement);
             break;
         default:
             cout << "Invalid option. Exiting." << endl;
@@ -306,3 +304,44 @@ void printNumCountries_perCity(const FlightManagement& flightManagement){
         }
     }
 }
+
+void printNumAirports_perAirport(const FlightManagement& flightManagement){
+    cout << "Enter the code of the airport: ";
+    string airportCode;
+    cin >> airportCode;
+
+    Graph<string> graph = flightManagement.getGraph();
+    vector<Vertex<string>*> nodes = graph.getVertexSet();
+    unordered_set<string> airports;
+
+    for (auto node : nodes) {
+        if (node->getInfo() == airportCode) {
+            for (auto edge : node->getAdj()) {
+                string destinationAirportCode = edge.getDest()->getInfo();
+                airports.insert(destinationAirportCode);
+            }
+        }
+    }
+
+    unordered_map<string, Airport*> allAirports = flightManagement.getAirportMap();
+    set<string> airportsDest;
+    for (auto destinationAirport : airports){
+        for (auto element : allAirports){
+            if(element.first == destinationAirport){
+                airportsDest.insert(element.second->getName());
+            }
+        }
+    }
+
+    int numAirports = airportsDest.size();
+    cout << "The airport " << airportCode << " is connected to " << numAirports << " different airports." << endl;
+    cout << " Do you want to consult which airports are available? [Y/N]" << endl;
+    char answer;
+    cin >> answer;
+    if (answer == 'Y' || answer == 'y'){
+        for (auto destination : airportsDest){
+            cout << destination << endl;
+        }
+    }
+}
+void printNumCities_perAirport(const FlightManagement& flightManagement);

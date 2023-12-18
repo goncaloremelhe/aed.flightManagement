@@ -17,5 +17,7 @@ void printNumFlights_perCity(const FlightManagement& flightManagement);
 void printNumFlights_perAirline(const FlightManagement& flightManagement);
 void printNumCountries_perAirport(const FlightManagement& flightManagement);
 void printNumCountries_perCity(const FlightManagement& flightManagement);
+void printNumAirports_perAirport(const FlightManagement& flightManagement);
+void printNumCities_perAirport(const FlightManagement& flightManagement);
 
 #endif //FLIGHTMANAGEMENT_MENU_H
