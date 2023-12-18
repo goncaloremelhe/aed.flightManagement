@@ -8,12 +8,15 @@
 void printStatisticsMenu(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
     cout << "Choose one option:" << endl;
-    cout << "1 - Check global number of airports" << endl;
+    cout << "1 - Check global number of airports or flights" << endl;
     cout << "2 - Check global number of available flights" << endl;
     cout << "3 - Check number of flights per airport, city or airline" << endl;
     cout << "4 - Check number of different countries connected to a specific airport or city" << endl;
     cout << "5 - Check number of destinations available for a given airport;" << endl;
     cout << "6 - Check number of reachable destinations with X lay-overs from a given airport" << endl;
+    cout << "7 - Check maximum trips with the greatest number of stops between them" << endl;
+    cout << "8 - Check top-k airports with the greatest traffic capacity" << endl;
+    cout << "9 - Identify the airports that are essential to the network's circulation capability" << endl;
     cout << "--------------------------------------------------\n";
     cout << "Option: ";
     int option = 0;
@@ -36,6 +39,15 @@ void printStatisticsMenu(const FlightManagement& flightManagement){
             break;
         case 6:
             printDestinationWithStopsMenu(flightManagement);
+            break;
+        case 7:
+            printMaximumTrip(flightManagement);
+            break;
+        case 8:
+            printAirportsGreatestCapability(flightManagement);
+            break;
+        case 9:
+            printEssentialAirports(flightManagement);
             break;
         default:
             cout << "Invalid option. Exiting." << endl;
@@ -428,20 +440,22 @@ vector<string> reachableDest(const FlightManagement& flightManagement, string so
         node->setVisited(false);
     }
 
-    queue<pair<Vertex<string> *, int>> unvisited;
-    unvisited.push(make_pair(s, 0));
+    queue<Vertex<string> * > unvisited;
+    s->setIndegree(0);
+    unvisited.push(s);
     s->setVisited(true);
     while(!unvisited.empty()){
         auto v = unvisited.front();
         unvisited.pop();
-        for (auto & neighbor : v.first->getAdj()){
+        for (auto & neighbor : v->getAdj()){
             auto w = neighbor.getDest();
-            if(!w->isVisited())
-                unvisited.push(make_pair(w, v.second+1));
-            w->setVisited(true);
+            if(!w->isVisited()){
+                w->setIndegree(v->getIndegree()+1);
+                unvisited.push(w);
+                w->setVisited(true);}
         }
-        if (v.second <= maxStops)
-            reachableDest.push_back(v.first->getInfo());
+        if (v->getIndegree() <= maxStops)
+            reachableDest.push_back(v->getInfo());
     }
 
     return reachableDest;
@@ -533,5 +547,85 @@ void printNumberCountriesWithStops(const FlightManagement& flightManagement){
         for (auto destination : reachable){
             cout << destination << endl;
         }
+    }
+}
+
+void printMaximumTrip(const FlightManagement& flightManagement){
+    Graph<string> graph = flightManagement.getGraph();
+    Vertex<string> * s = graph.getVertexSet().front();
+    vector<string> reachableDest;
+    int max = 0;
+
+    if (s == NULL)
+        return;
+
+
+    for (auto node : graph.getVertexSet()){
+        node->setVisited(false);
+    }
+
+    // fazer o resto aqui
+
+}
+
+void printAirportsGreatestCapability(const FlightManagement& flightManagement){
+
+}
+
+void printEssentialAirports(const FlightManagement& flightManagement){
+    Graph<string> graph = flightManagement.getGraph();
+    unordered_set<string> essentialAirports;
+    stack<string> s;
+
+    int i = 0;
+    for (auto element : graph.getVertexSet()){
+        element->setVisited(false);
+        element->setProcessing(false);
+        element->setNum(i);
+    }
+    i++;
+
+    for (auto element : graph.getVertexSet()){
+        if (element->getNum() == 0){
+            dfs_art(graph, element, s, essentialAirports, i);
+        }
+    }
+
+    unordered_map<string, Airport*> allAirports = flightManagement.getAirportMap();
+    cout << "There are " << essentialAirports.size() <<  " essential airports to the network's circulation capability: " << endl;
+    cout << "Code     Name" << endl;
+    for (auto element : essentialAirports){
+        for (auto airport : allAirports){
+            if (element == airport.first){
+                cout << airport.first << " " << airport.second->getName() << endl;
+            }
+        }
+    }
+}
+
+void dfs_art(Graph<string> g, Vertex<string> *v, stack<string> &s, unordered_set<string> &l, int &i){
+    v->setProcessing(true);
+    v->setNum(i);
+    v->setLow(i);
+    i++;
+
+    int children = 0;
+    for (auto element : v->getAdj()){
+        if(element.getDest()->getNum() == 0){
+            children++;
+            dfs_art(g, element.getDest(), s, l, i);
+            v->setLow(min(element.getDest()->getLow(), v->getLow()));
+            if(v != g.getVertexSet().at(0) &&element.getDest()->getLow() >= v->getNum()) {
+                l.insert(v->getInfo());
+            }
+        } else if(element.getDest()->isProcessing()){
+            v->setLow(min(element.getDest()->getNum(), v->getLow()));
+        }
+
+    }
+
+    v->setProcessing(false);
+    if(v == g.getVertexSet().at(0) &&children > 1){
+        l.insert(v->getInfo());
     }
 }

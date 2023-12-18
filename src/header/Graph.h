@@ -27,6 +27,8 @@
         bool visited;
         bool processing;
         int indegree;
+        int num;               // auxiliary field
+        int low;               // auxiliary field
         void addEdge(Vertex<T> *dest, double w, string airline);
         bool removeEdgeTo(Vertex<T> *d);
     public:
@@ -42,6 +44,10 @@
         const vector<Edge<T>> &getAdj() const;
         void setAdj(const vector<Edge<T>> &adj);
         friend class Graph<T>;
+        int getNum() const;
+        void setNum(int num);
+        int getLow() const;
+        void setLow(int low);
     };
 
     template <class T>
@@ -173,6 +179,25 @@
         Vertex::indegree = indegree;
     }
 
+    template<class T>
+    int Vertex<T>::getNum() const {
+        return num;
+    }
+
+    template<class T>
+    void Vertex<T>::setNum(int num) {
+        Vertex::num = num;
+    }
+
+    template<class T>
+    int Vertex<T>::getLow() const {
+        return low;
+    }
+
+    template<class T>
+    void Vertex<T>::setLow(int low) {
+        Vertex::low = low;
+    }
 
     template <class T>
     void Vertex<T>::setVisited(bool v) {

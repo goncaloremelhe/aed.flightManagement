@@ -25,6 +25,9 @@ vector<string> reachableDest(const FlightManagement& flightManagement, string so
 void printNumberAirportsWithStops(const FlightManagement& flightManagement);
 void printNumberCitiesWithStops(const FlightManagement& flightManagement);
 void printNumberCountriesWithStops(const FlightManagement& flightManagement);
-
+void printMaximumTrip(const FlightManagement& flightManagement);
+void printAirportsGreatestCapability(const FlightManagement& flightManagement);
+void printEssentialAirports(const FlightManagement& flightManagement);
+void dfs_art(Graph<string> g, Vertex<string> *v, stack<string> &s, unordered_set<string> &l, int &i);
 
 #endif //FLIGHTMANAGEMENT_MENU_H

@@ -12,7 +12,7 @@ int main() {
         Vertex<string>* v = flightManagement.getGraph().getVertexSet().at(i);
         unordered_map<string, Airport*> mapa = flightManagement.getAirportMap();
         Airport* airport = mapa[v->getInfo()];
-        cout << airport->getCode() << " " << airport->getName() << " " << airport->getCountry() << " " << airport->getCity() << "\n";
+        //cout << airport->getCode() << " " << airport->getName() << " " << airport->getCountry() << " " << airport->getCity() << "\n";
     }
 
     printStatisticsMenu(flightManagement);
