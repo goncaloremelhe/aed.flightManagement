@@ -13,6 +13,7 @@ void printStatisticsMenu(const FlightManagement& flightManagement){
     cout << "3 - Check number of flights per airport, city or airline" << endl;
     cout << "4 - Check number of different countries connected to a specific airport or city" << endl;
     cout << "5 - Check number of destinations available for a given airport;" << endl;
+    cout << "6 - Check number of reachable destinations with X lay-overs from a given airport" << endl;
     cout << "--------------------------------------------------\n";
     cout << "Option: ";
     int option = 0;
@@ -31,7 +32,10 @@ void printStatisticsMenu(const FlightManagement& flightManagement){
             printCountriesOptionsMenu(flightManagement);
             break;
         case 5:
-            printDestionationOptionMenu(flightManagement);
+            printDestinationOptionMenu(flightManagement);
+            break;
+        case 6:
+            printDestinationWithStopsMenu(flightManagement);
             break;
         default:
             cout << "Invalid option. Exiting." << endl;
@@ -105,10 +109,37 @@ void printDestionationOptionMenu(const FlightManagement& flightManagement){
             printNumAirports_perAirport(flightManagement);
             break;
         case 2:
-            //printNumCities_perAirport(flightManagement);
+            printNumCities_perAirport(flightManagement);
             break;
         case 3:
             printNumCountries_perAirport(flightManagement);
+            break;
+        default:
+            cout << "Invalid option. Exiting." << endl;
+            break;
+    }
+}
+
+void printDestinationWithStopsMenu(const FlightManagement flightManagement){
+    cout << "--------------------------------------------------\n";
+    cout << "You chose to check how many destinations are reachable from an airport in a maximum of X stops!" << endl;
+    cout << "Choose one option:" << endl;
+    cout << "1 - Check number of destination airports available for a given airport in a maximum of X stops" << endl;
+    cout << "2 - Check number of destination cities available for a given airport in a maximum of X stops" << endl;
+    cout << "3 - Check number of destination countries available for a given airport in a maximum of X stops" << endl;
+    cout << "--------------------------------------------------\n";
+    cout << "Option: ";
+    int option = 0;
+    cin >> option;
+    switch (option) {
+        case 1:
+
+            break;
+        case 2:
+
+            break;
+        case 3:
+
             break;
         default:
             cout << "Invalid option. Exiting." << endl;
@@ -344,4 +375,42 @@ void printNumAirports_perAirport(const FlightManagement& flightManagement){
         }
     }
 }
-void printNumCities_perAirport(const FlightManagement& flightManagement);
+void printNumCities_perAirport(const FlightManagement& flightManagement){
+    cout << "Enter the code of the airport: ";
+    string airportCode;
+    cin >> airportCode;
+
+    Graph<string> graph = flightManagement.getGraph();
+    vector<Vertex<string>*> nodes = graph.getVertexSet();
+    unordered_set<string> airports;
+
+    for (auto node : nodes) {
+        if (node->getInfo() == airportCode) {
+            for (auto edge : node->getAdj()) {
+                string destinationAirportCode = edge.getDest()->getInfo();
+                airports.insert(destinationAirportCode);
+            }
+        }
+    }
+
+    unordered_map<string, Airport*> allAirports = flightManagement.getAirportMap();
+    set<string> citiesDest;
+    for (auto destinationAirport : airports){
+        for (auto element : allAirports){
+            if(element.first == destinationAirport){
+                citiesDest.insert(element.second->getCity());
+            }
+        }
+    }
+
+    int numCities = citiesDest.size();
+    cout << "The airport " << airportCode << " is connected to " << numCities << " different cities." << endl;
+    cout << " Do you want to consult which cities are available? [Y/N]" << endl;
+    char answer;
+    cin >> answer;
+    if (answer == 'Y' || answer == 'y'){
+        for (auto destination : citiesDest){
+            cout << destination << endl;
+        }
+    }
+}
