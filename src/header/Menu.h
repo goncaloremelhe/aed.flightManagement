@@ -24,6 +24,7 @@ void printNumCities_perAirport(const FlightManagement& flightManagement);
 vector<string> reachableDest(const FlightManagement& flightManagement, string sourceAirportCode, int maxStops);
 void printNumberAirportsWithStops(const FlightManagement& flightManagement);
 void printNumberCitiesWithStops(const FlightManagement& flightManagement);
+void printNumberCountriesWithStops(const FlightManagement& flightManagement);
 
 
 #endif //FLIGHTMANAGEMENT_MENU_H

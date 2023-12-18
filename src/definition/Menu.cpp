@@ -139,7 +139,7 @@ void printDestinationWithStopsMenu(const FlightManagement flightManagement){
             printNumberCitiesWithStops(flightManagement);
             break;
         case 3:
-
+            printNumberCountriesWithStops(flightManagement);
             break;
         default:
             cout << "Invalid option. Exiting." << endl;
@@ -494,6 +494,39 @@ void printNumberCitiesWithStops(const FlightManagement& flightManagement){
 
     cout << "The number of destination cities reachable from " << sourceAirportCode << " in a maximum of " << maxStops << " stops is: " << numDestinations << endl;
     cout << " Do you want to consult which cities are available? [Y/N]" << endl;
+    char answer;
+    cin >> answer;
+    if (answer == 'Y' || answer == 'y'){
+        for (auto destination : reachable){
+            cout << destination << endl;
+        }
+    }
+}
+
+void printNumberCountriesWithStops(const FlightManagement& flightManagement){
+    cout << "Enter the code of the source airport: ";
+    string sourceAirportCode;
+    cin >> sourceAirportCode;
+
+    cout << "Enter the maximum number of stops (X): ";
+    int maxStops;
+    cin >> maxStops;
+
+    vector<string> reachable = reachableDest(flightManagement, sourceAirportCode, maxStops);
+    set<string> countriesDest;
+    unordered_map<string, Airport*> allAirports = flightManagement.getAirportMap();
+    for (auto destinationAirport : reachable){
+        for (auto element : allAirports){
+            if(element.first == destinationAirport){
+                countriesDest.insert(element.second->getCountry());
+            }
+        }
+    }
+
+    int numDestinations = countriesDest.size();
+
+    cout << "The number of destination countries reachable from " << sourceAirportCode << " in a maximum of " << maxStops << " stops is: " << numDestinations << endl;
+    cout << " Do you want to consult which countries are available? [Y/N]" << endl;
     char answer;
     cin >> answer;
     if (answer == 'Y' || answer == 'y'){
