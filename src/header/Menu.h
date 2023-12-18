@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "FlightManagement.h"
+#include <unordered_set>
 
 
 void printStatisticsMenu(const FlightManagement& flightManagement);
@@ -20,6 +21,8 @@ void printNumCountries_perAirport(const FlightManagement& flightManagement);
 void printNumCountries_perCity(const FlightManagement& flightManagement);
 void printNumAirports_perAirport(const FlightManagement& flightManagement);
 void printNumCities_perAirport(const FlightManagement& flightManagement);
+void printNumberAirportsWithStops(const FlightManagement& flightManagement);
+int countDestinationsAirportsWithStops(const Graph<string>& graph, const string& sourceAirportCode, int maxStops, unordered_set<string>& visitedAirports);
 
 
 #endif //FLIGHTMANAGEMENT_MENU_H

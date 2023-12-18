@@ -93,7 +93,7 @@ void printCountriesOptionsMenu(const FlightManagement& flightManagement){
     }
 }
 
-void printDestionationOptionMenu(const FlightManagement& flightManagement){
+void printDestinationOptionMenu(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
     cout << "You chose to check how many destinations are available to a specific airport!" << endl;
     cout << "Choose one option:" << endl;
@@ -133,7 +133,7 @@ void printDestinationWithStopsMenu(const FlightManagement flightManagement){
     cin >> option;
     switch (option) {
         case 1:
-
+            printNumberAirportsWithStops(flightManagement);
             break;
         case 2:
 
@@ -413,4 +413,46 @@ void printNumCities_perAirport(const FlightManagement& flightManagement){
             cout << destination << endl;
         }
     }
+}
+
+void printNumberAirportsWithStops(const FlightManagement& flightManagement){
+        cout << "Enter the code of the source airport: ";
+        string sourceAirportCode;
+        cin >> sourceAirportCode;
+
+        cout << "Enter the maximum number of stops (X): ";
+        int maxStops;
+        cin >> maxStops;
+
+        Graph<string> graph = flightManagement.getGraph();
+        Vertex<string> * s = graph.findVertex(sourceAirportCode);
+        vector<string> reachableDest;
+
+        if (s == NULL){
+            return;
+        }
+
+        for (auto node : graph.getVertexSet()){
+            node->setVisited(false);
+        }
+
+        queue<pair<Vertex<string> *, int>> unvisited;
+        unvisited.push(make_pair(s, 0));
+        s->setVisited(true);
+        while(!unvisited.empty()){
+            auto v = unvisited.front();
+            unvisited.pop();
+            for (auto & neighbor : v.first->getAdj()){
+                auto w = neighbor.getDest();
+                if(!w->isVisited())
+                    unvisited.push(make_pair(w, v.second+1));
+                    w->setVisited(true);
+            }
+            if (v.second <= maxStops)
+                reachableDest.push_back(v.first->getInfo());
+        }
+
+        int numDestinations = reachableDest.size() - 1; // tira ele mesmo
+
+        cout << "The number of destination airports reachable from " << sourceAirportCode << " in a maximum of " << maxStops << " stops is: " << numDestinations << endl;
 }
