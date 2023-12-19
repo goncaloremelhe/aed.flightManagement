@@ -3,6 +3,7 @@
 #include <unordered_set>
 #include <iostream>
 #include <set>
+#include <algorithm>
 
 
 void printStatisticsMenu(const FlightManagement& flightManagement){
@@ -569,8 +570,46 @@ void printMaximumTrip(const FlightManagement& flightManagement){
 }
 
 void printAirportsGreatestCapability(const FlightManagement& flightManagement){
+    cout << "Enter the value of k for top-k airports: ";
+    int k;
+    cin >> k;
 
+    Graph<string> graph = flightManagement.getGraph();
+    vector<Vertex<string>*> nodes = graph.getVertexSet();
+    set<pair<int, string>, greater<pair<int, string>>> totalFlights;
+
+    int numFlightsToAirport = 0;
+    int numFlightsOut = 0;
+
+    for (auto specificNode : nodes){
+        numFlightsToAirport = 0;
+        for (auto node : nodes){
+            if (node->getInfo() == specificNode->getInfo()) {
+                numFlightsOut = node->getAdj().size();
+            } else {
+                for (auto dest : node->getAdj()){
+                    if (dest.getDest()->getInfo() == specificNode->getInfo())
+                        numFlightsToAirport++;
+                }
+            }
+        }
+
+        int total = numFlightsToAirport + numFlightsOut;
+        totalFlights.insert(make_pair(total, specificNode->getInfo()));
+
+    }
+
+    cout << "Top " << k << " airports by traffic capacity:" << endl;
+    int i = 0;
+    for (const auto& airport : totalFlights) {
+        if (i >= k) {
+            break;
+        }
+        cout << airport.second << " - " << airport.first << " flights" << endl;
+        i++;
+    }
 }
+
 
 void printEssentialAirports(const FlightManagement& flightManagement){
     Graph<string> graph = flightManagement.getGraph();
