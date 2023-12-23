@@ -7,16 +7,21 @@
 #include <limits>
 #include <iomanip>
 
+struct airportComparator {
+    bool operator()(const Airport* firstAirport, const Airport* secondAirport) const {
+        return *firstAirport < *secondAirport;
+    }
+};
+
 
 void printStatisticsMenu(){
     cout << "--------------------------------------------------\n";
     cout << "Choose one option:" << endl;
     cout << "1 - Total number of airports" << endl;
-    cout << "2 - APAGAR" << endl;
     cout << "3 - Total number of flights per airport, city or airline" << endl;
     cout << "4 - Check the number of countries connected to a specific airport or city" << endl;
     cout << "5 - Check number of destinations available for a given airport;" << endl;
-    cout << "6 - Check number of reachable destinations with X lay-overs from a given airport" << endl;
+    cout << "6 - Consult reachable destinations with 'n' layovers" << endl;
     cout << "7 - Check maximum trips with the greatest number of stops between them" << endl;
     cout << "8 - Check airports with the greatest traffic capacity" << endl;
     cout << "9 - Identify the airports that are essential to the network's circulation capability" << endl;
@@ -119,6 +124,7 @@ void printDestinationOptionMenu(const FlightManagement& flightManagement){
     }
 }
 
+/*
 void printDestinationWithStopsMenu(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
     cout << "You chose to check how many destinations are reachable from an airport in a maximum of X stops!" << endl;
@@ -150,8 +156,7 @@ void printDestinationWithStopsMenu(const FlightManagement& flightManagement){
             break;
     }
 }
-
-
+ */
 
 
 void printGlobalAirports(const FlightManagement& flightManagement){
@@ -328,8 +333,9 @@ void printNumCountries_perAirport(const FlightManagement& flightManagement){
     } else {
         cout << "The airport " << airportCode << " is connected to " << numCountries << " different countries." << endl;
     }
-    cout << "Do you want to consult which countries are available? [Y/N]:";
+    cout << "Do you want to consult which countries are available? [Y/N]";
     char answer;
+    cout << "Option:";
     cin >> answer;
     if (answer == 'Y' || answer == 'y'){
         cout << "--------------------------------------------------\n";
@@ -526,107 +532,161 @@ vector<string> reachableDest(const FlightManagement& flightManagement, const str
     return reachableDest;
 }
 
-void printNumberAirportsWithStops(const FlightManagement& flightManagement){
+void printStatisticWithStops(const FlightManagement& flightManagement) {
+    unordered_map<string, Airport*> allAirports = flightManagement.getAirportMap();
+
     cout << "--------------------------------------------------\n";
     cout << "Enter the source airport's code [XXX]:";
     string sourceAirportCode;
     cin >> sourceAirportCode;
     sourceAirportCode = upperCase(sourceAirportCode);
+
+    unordered_map<string, Airport *>::iterator it;
+    it = allAirports.find(sourceAirportCode);
+    if (it == allAirports.end()) {
+        cout << "Airport not found! Please, try again." << endl;
+        return;
+    }
+
     cout << "Enter the maximum number of layovers:";
-    int maxStops;
-    cin >> maxStops;
-
-    vector<string> reachable = reachableDest(flightManagement, sourceAirportCode, maxStops);
-    int numDestinations = reachable.size() - 1; // tira ele mesmo
-
-    cout << "--------------------------------------------------\n";
-    cout << "The number of destination airports reachable from " << sourceAirportCode << " in a maximum of " << maxStops << " layovers is: " << numDestinations << endl;
-    cout << "--------------------------------------------------\n";
-    cout << "Do you want to consult which cities are available? [Y/N]" << endl;
-    char answer;
-    cout << "Option:" << endl;
-    cin >> answer;
-    if (answer == 'Y' || answer == 'y'){
-        cout << "--------------------------------------------------\n";
-        for (const string& destination : reachable){
-            cout << destination << endl;
+    string maxStops_;
+    cin >> maxStops_; cout << endl;
+    for (char c : maxStops_) {
+        if (!isdigit(c)) {
+            cout << "--------------------------------------------------" << endl;
+            cout << "Invalid input! Please, try again." << endl;
+            return;
         }
     }
-}           //Com n^2
-
-
-void printNumberCitiesWithStops(const FlightManagement& flightManagement){
-    cout << "--------------------------------------------------\n";
-    cout << "Enter the source airport's code [XXX]:";
-    string sourceAirportCode;
-    cin >> sourceAirportCode;
-    sourceAirportCode = upperCase(sourceAirportCode);
-
-    cout << "Enter the maximum number of layovers:";
-    int maxStops;
-    cin >> maxStops;
+    int maxStops = stoi(maxStops_);
 
     vector<string> reachable = reachableDest(flightManagement, sourceAirportCode, maxStops);
+
     set<string> citiesDest;
-    unordered_map<string, Airport*> allAirports = flightManagement.getAirportMap();
-    for (const string& destinationAirport : reachable) {
-        Airport* airport = allAirports[destinationAirport];
-        citiesDest.insert(airport->getCity());
-    }
-
-    int numDestinations = citiesDest.size();
-
-    cout << "--------------------------------------------------\n";
-    cout << "The number of destination cities reachable from " << sourceAirportCode << " in a maximum of " << maxStops << " layovers is: " << numDestinations << endl;
-    cout << "--------------------------------------------------\n";
-    cout << "Do you want to consult which cities are available? [Y/N]" << endl;
-    char answer;
-    cout << "Option:" << endl;
-    cin >> answer;
-    if (answer == 'Y' || answer == 'y'){
-        cout << "--------------------------------------------------\n";
-        for (const string& destination : reachable){
-            cout << destination << endl;
-        }
-    }
-}             //Com n^2
-
-void printNumberCountriesWithStops(const FlightManagement& flightManagement){
-    cout << "--------------------------------------------------\n";
-    cout << "Enter the source airport's code [XXX]:";
-    string sourceAirportCode;
-    cin >> sourceAirportCode;
-    sourceAirportCode = upperCase(sourceAirportCode);
-
-    cout << "Enter the maximum number of layovers:";
-    int maxStops;
-    cin >> maxStops;
-
-    vector<string> reachable = reachableDest(flightManagement, sourceAirportCode, maxStops);
     set<string> countriesDest;
-    unordered_map<string, Airport*> allAirports = flightManagement.getAirportMap();
+    set<Airport*, airportComparator> airportSet;
 
     for (const string& destinationAirport : reachable) {
         Airport* airport = allAirports[destinationAirport];
+        airportSet.insert(airport);
+        citiesDest.insert(airport->getCity());
         countriesDest.insert(airport->getCountry());
     }
 
-    int numDestinations = countriesDest.size();
 
-    cout << "--------------------------------------------------\n";
-    cout << "The number of destination countries reachable from " << sourceAirportCode << " in a maximum of " << maxStops << " stops is: " << numDestinations << endl;
-    cout << "--------------------------------------------------\n";
-    cout << "Do you want to consult which countries are available? [Y/N]" << endl;
-    char answer;
-    cout << "Option:" << endl;
-    cin >> answer;
-    if (answer == 'Y' || answer == 'y'){
-        cout << "--------------------------------------------------\n";
-        for (auto destination : reachable){
-            cout << destination << endl;
+    cout << "--------------------------------------------------" << endl;
+    cout << "From " << sourceAirportCode << " (" << (*it).second->getCity() << ")" << ", with " << maxStops << " layovers, you can reach:" << endl;
+    cout << "     - " << reachable.size() - 1 << " airports;" << endl;
+    cout << "     - " << citiesDest.size() << " cities;" << endl;
+    cout << "     - " << countriesDest.size() << " countries." << endl;
+    cout << "--------------------------------------------------" << endl;
+    cout << "Do you want to consult any of the results?" << endl;
+    cout << "1. Only airports" << endl;
+    cout << "2. Only cities" << endl;
+    cout << "3. Only countries" << endl;
+    cout << "4. Countries, cities and airports" << endl;
+    cout << "0. None of them" << endl;
+    cout << "--------------------------------------------------" << endl;
+    cout << "Option:";
+    char option = '0';
+    cin >> option;
+    switch (option) {
+        case '0':
+            return;
+        case '1':
+            printAirport(airportSet, false);
+            break;
+        case '2':
+            printList(citiesDest, true);
+            break;
+        case '3':
+            printList(countriesDest, false);
+            break;
+        case '4':
+            printAirport(airportSet, true);
+            break;
+        default:
+            cout << "--------------------------------------------------" << endl;
+            cout << "Invalid option! Please, try again." << endl;
+            return;
+    }
+
+}
+
+void printAirport(const set<Airport *, airportComparator>& set, bool b) {
+    /*
+    cout << "--------------------------------------------------" << endl;
+    cout << "How many airports do you want to see? Maximum of " << set.size() << " airports." << endl;
+    string value;
+    while (true) {
+        cout << "Number of airports:";
+        cin >> value;
+        if (isNumber(value)) {
+            break;
+        } else {
+            cout << "Invalid input! Please, try again." << endl;
+            cout << "--------------------------------------------------" << endl;
         }
     }
-}          //Com n^2
+    int val = stoi(value);
+     */
+    cout << "--------------------------------------------------" << endl;
+    if (b) {
+        cout << "Code   Country                     City                      Name" << endl;
+        for (Airport* airport : set) {
+            cout << left << setw(6) << airport->getCode() << " ";
+            cout << left << setw(27) << airport->getCountry() << " ";
+            cout << left << setw(25) << airport->getCity() << " ";
+            cout << left << setw(35) << airport->getName() << "\n";
+            //val--;
+            //if (val == 0) {
+            //    break;
+            //}
+        }
+    } else {
+        cout << "Code   Name" << endl;
+        for (Airport *airport: set) {
+            cout << left << setw(6) << airport->getCode() << " ";
+            cout << left << setw(35) << airport->getName() << "\n";
+            //val--;
+            //if (val == 0) {
+            //    break;
+            //}
+        }
+    }
+}
+
+void printList(const set<string>& set, bool b) {
+    /*
+    cout << "--------------------------------------------------" << endl;
+    cout << "How many cities/countries do you want to see? Maximum of " << set.size() << " cities/countries." << endl;
+    string value;
+    while (true) {
+        cout << "Number of cities/countries:";
+        cin >> value;
+        if (isNumber(value)) {
+            break;
+        } else {
+            cout << "Invalid input! Please, try again." << endl;
+            cout << "--------------------------------------------------" << endl;
+        }
+    }
+    int val = stoi(value);
+     */
+    cout << "--------------------------------------------------" << endl;
+    if (b) {
+        cout << "City" << endl;
+    } else {
+        cout << "Country" << endl;
+    }
+    for (const string& str : set) {
+        cout << str << "\n";
+        //val--;
+        //if (val == 0) {
+        //    break;
+        //}
+    }
+}
 
 
 
@@ -676,13 +736,6 @@ void printAirportsGreatestCapability(const FlightManagement& flightManagement){
     }
 }       //Com O(n)
 
-
-
-struct airportComparator {
-    bool operator()(const Airport* firstAirport, const Airport* secondAirport) const {
-        return *firstAirport < *secondAirport;
-    }
-};
 
 //308?
 void printEssentialAirports(const FlightManagement& flightManagement){
@@ -754,4 +807,13 @@ string upperCase(const string& str) {
         s += toupper(c);
     }
     return s;
+}
+
+bool isNumber(const string& str) {
+    for (char c : str) {
+        if (!isdigit(c)) {
+            return false;
+        }
+    }
+    return true;
 }

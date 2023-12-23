@@ -17,9 +17,11 @@ int main() {
             case '1':
                 printGlobalAirports(flightManagement);
                 break;
+                /*
             case '2':
                 printGlobalFlights(flightManagement);
                 break;
+                 */
             case '3':
                 printNumberFlightsMenu(flightManagement);
                 break;
@@ -30,7 +32,8 @@ int main() {
                 printDestinationOptionMenu(flightManagement);
                 break;
             case '6':
-                printDestinationWithStopsMenu(flightManagement);
+                //printDestinationWithStopsMenu(flightManagement);
+                printStatisticWithStops(flightManagement);
                 break;
             case '7':
                 printMaximumTrip(flightManagement);
