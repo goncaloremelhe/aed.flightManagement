@@ -8,14 +8,51 @@ int main() {
     flightManagement.readAirline();
     flightManagement.readFlight();
 
-    for (int i = 0; i < 40; i++) {
-        Vertex<string>* v = flightManagement.getGraph().getVertexSet().at(i);
-        unordered_map<string, Airport*> mapa = flightManagement.getAirportMap();
-        Airport* airport = mapa[v->getInfo()];
-        //cout << airport->getCode() << " " << airport->getName() << " " << airport->getCountry() << " " << airport->getCity() << "\n";
+    char option = '0';
+    bool flag = true;
+    while (flag) {
+        printStatisticsMenu();
+        cin >> option;
+        switch (option){
+            case '1':
+                printGlobalAirports(flightManagement);
+                break;
+            case '2':
+                printGlobalFlights(flightManagement);
+                break;
+            case '3':
+                printNumberFlightsMenu(flightManagement);
+                break;
+            case '4':
+                printCountriesOptionsMenu(flightManagement);
+                break;
+            case '5':
+                printDestinationOptionMenu(flightManagement);
+                break;
+            case '6':
+                printDestinationWithStopsMenu(flightManagement);
+                break;
+            case '7':
+                printMaximumTrip(flightManagement);
+                break;
+            case '8':
+                printAirportsGreatestCapability(flightManagement);
+                break;
+            case '9':
+                printEssentialAirports(flightManagement);
+                break;
+            case '0':
+                flag = false;
+                break;
+            default:
+                cout << "Invalid option. Exiting." << endl;
+                break;
+        }
     }
 
-    printStatisticsMenu(flightManagement);
-
+    cout << "--------------------------------------------------\n";
+    cout << "Exiting..." << endl;
+    cout << "--------------------------------------------------\n";
+    cout << "Goodbye!" << endl;
     return 0;
 }

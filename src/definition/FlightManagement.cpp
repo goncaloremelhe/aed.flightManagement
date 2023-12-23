@@ -8,6 +8,15 @@
 
 using namespace std;
 
+string upperCase(const string str) {
+    string s;
+    for (char c : str) {
+        s += toupper(c);
+    }
+    return s;
+}
+
+
 void FlightManagement::readAirline() {
     ifstream input("../dataset/airlines.csv");
     if (!input.is_open()) {
@@ -55,9 +64,15 @@ void FlightManagement::readAirport() {
         float newLatitude = stof(latitude);
         float newLongitude = stof(longitude);
 
+        city = upperCase(city);
+
         Airport tempAirport(code, name, city, country, newLatitude, newLongitude);
         flightManagement.addVertex(code);
         airportMap[code] = new Airport(tempAirport);
+    }
+
+    for (Vertex<string>* vertex : flightManagement.getVertexSet()) {
+        vertex->setIndegree(0);
     }
 }
 
@@ -79,6 +94,11 @@ void FlightManagement::readFlight() {
         getline(iss, target, ',');
         getline(iss, airline, ',');
 
+        Vertex<string>* vertex = flightManagement.findVertex(target);
+        if (vertex != NULL) {
+            vertex->setIndegree(vertex->getIndegree() + 1);
+        }
+        airlineMap[airline]->incrementFlights();
         flightManagement.addEdge(source,target,0,airline);
     }
 }

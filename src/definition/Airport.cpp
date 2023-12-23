@@ -44,3 +44,13 @@ bool Airport::operator==(const Airport &airport) const {
             longitude == airport.longitude);
 }
 
+bool Airport::operator<(const Airport &airport) const {
+    if (country == airport.country) {
+        if (city == airport.city) {
+            return code < airport.code;
+        }
+        return city < airport.city;
+    }
+    return country < airport.country;
+}
+

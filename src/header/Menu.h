@@ -6,11 +6,11 @@
 #include <unordered_set>
 
 
-void printStatisticsMenu(const FlightManagement& flightManagement);
+void printStatisticsMenu();
 void printNumberFlightsMenu (const FlightManagement& flightManagement);
 void printCountriesOptionsMenu(const FlightManagement& flightManagement);
 void printDestinationOptionMenu(const FlightManagement& flightManagement);
-void printDestinationWithStopsMenu(const FlightManagement flightManagement);
+void printDestinationWithStopsMenu(const FlightManagement& flightManagement);
 
 void printGlobalAirports(const FlightManagement& flightManagement);
 void printGlobalFlights(const FlightManagement& flightManagement);
@@ -21,13 +21,15 @@ void printNumCountries_perAirport(const FlightManagement& flightManagement);
 void printNumCountries_perCity(const FlightManagement& flightManagement);
 void printNumAirports_perAirport(const FlightManagement& flightManagement);
 void printNumCities_perAirport(const FlightManagement& flightManagement);
-vector<string> reachableDest(const FlightManagement& flightManagement, string sourceAirportCode, int maxStops);
+vector<string> reachableDest(const FlightManagement& flightManagement, const string& sourceAirportCode, int maxStops);
 void printNumberAirportsWithStops(const FlightManagement& flightManagement);
 void printNumberCitiesWithStops(const FlightManagement& flightManagement);
 void printNumberCountriesWithStops(const FlightManagement& flightManagement);
 void printMaximumTrip(const FlightManagement& flightManagement);
 void printAirportsGreatestCapability(const FlightManagement& flightManagement);
 void printEssentialAirports(const FlightManagement& flightManagement);
-void dfs_art(Graph<string> g, Vertex<string> *v, stack<string> &s, unordered_set<string> &l, int &i);
+void dfs_art(const Graph<string>& g, Vertex<string> *v, unordered_set<string> &l, int &i);
+
+string upperCase(const string& str);
 
 #endif //FLIGHTMANAGEMENT_MENU_H

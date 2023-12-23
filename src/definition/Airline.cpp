@@ -8,6 +8,7 @@ Airline::Airline(string code, string name, string callSign, string country) {
     this->name = std::move(name);
     this->callSign = std::move(callSign);
     this->country = std::move(country);
+    flights = 0;
 }
 
 string Airline::getCode() {
@@ -24,5 +25,13 @@ string Airline::getCallSign() {
 
 string Airline::getCountry() {
     return country;
+}
+
+void Airline::incrementFlights() {
+    flights += 1;
+}
+
+int Airline::getFlights() {
+    return flights;
 }
 
