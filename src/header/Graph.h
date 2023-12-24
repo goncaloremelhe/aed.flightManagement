@@ -86,6 +86,7 @@
         vector<T> dfs() const;
         vector<T> dfs(const T & source) const;
         vector<T> bfs(const T &source) const;
+        vector<T> bfsDis(const T &source, int distance) const;
         vector<T> topsort() const;
         bool isDAG() const;
     };
@@ -354,6 +355,37 @@
         return res;
     }
 
+    template <class T>
+    vector<T> Graph<T>::bfsDis(const T &source, int distance) const {
+        vector<T> res;
+        auto s = findVertex(source);
+        if (s == NULL){
+            return res;
+        }
+
+        for (auto v : vertexSet)
+            v->visited = false;
+
+        queue<Vertex<string> * > unvisited;
+        s->setDistance(0);
+        unvisited.push(s);
+        s->setVisited(true);
+        while(!unvisited.empty()){
+            Vertex<string>* v = unvisited.front();
+            unvisited.pop();
+            for (const Edge<string> &neighbor : v->getAdj()){
+                Vertex<string>* w = neighbor.getDest();
+                if(!w->isVisited()){
+                    w->setDistance(v->getDistance()+1);
+                    unvisited.push(w);
+                    w->setVisited(true);}
+            }
+            if (v->getDistance() == distance)
+                res.push_back(v->getInfo());
+        }
+
+        return res;
+    }
 
     /****************** isDAG  ********************/
 

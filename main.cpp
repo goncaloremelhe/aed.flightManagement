@@ -17,31 +17,19 @@ int main() {
             case '1':
                 printGlobalStatistics(flightManagement);
                 break;
-                /*
-            case '2':
-                printGlobalFlights(flightManagement);
-                break;
-                 */
             case '2':
                 printNumberFlightsMenu(flightManagement);
                 break;
             case '3':
-                printCountriesOptionsMenu(flightManagement);
-                break;
-            case '4':
                 printDestinationOptionMenu(flightManagement);
                 break;
+            case '4':
+                printLayoverMenu(flightManagement);
+                break;
             case '5':
-                //printDestinationWithStopsMenu(flightManagement);
-                printStatisticWithStops(flightManagement);
-                break;
-            case '6':
-                printMaximumTrip(flightManagement);
-                break;
-            case '7':
                 printAirportsGreatestCapability(flightManagement);
                 break;
-            case '8':
+            case '6':
                 printEssentialAirports(flightManagement);
                 break;
             case '0':
