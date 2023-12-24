@@ -13,8 +13,8 @@ void printCountriesOptionsMenu(const FlightManagement& flightManagement);
 void printDestinationOptionMenu(const FlightManagement& flightManagement);
 void printDestinationWithStopsMenu(const FlightManagement& flightManagement);
 
-void printGlobalAirports(const FlightManagement& flightManagement);
-void printGlobalFlights(const FlightManagement& flightManagement);
+void printGlobalStatistics(const FlightManagement& flightManagement);
+//void printGlobalFlights(const FlightManagement& flightManagement);
 void printNumFlights_outAirport(const FlightManagement& flightManagement);
 void printNumFlights_perCity(const FlightManagement& flightManagement);
 void printNumFlights_perAirline(const FlightManagement& flightManagement);

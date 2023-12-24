@@ -17,14 +17,14 @@ struct airportComparator {
 void printStatisticsMenu(){
     cout << "--------------------------------------------------\n";
     cout << "Choose one option:" << endl;
-    cout << "1 - Total number of airports" << endl;
-    cout << "3 - Total number of flights per airport, city or airline" << endl;
-    cout << "4 - Check the number of countries connected to a specific airport or city" << endl;
-    cout << "5 - Check number of destinations available for a given airport;" << endl;
-    cout << "6 - Consult reachable destinations with 'n' layovers" << endl;
-    cout << "7 - Check maximum trips with the greatest number of stops between them" << endl;
-    cout << "8 - Check airports with the greatest traffic capacity" << endl;
-    cout << "9 - Identify the airports that are essential to the network's circulation capability" << endl;
+    cout << "1 - Global statistics" << endl;                                                                        //Check
+    cout << "2 - Total number of flights per airport/city/airline" << endl;                                         //Check
+    cout << "3 - Countries connected to a specific airport/city" << endl;
+    cout << "4 - Check number of destinations available for a given airport;" << endl;
+    cout << "5 - Consult reachable destinations with 'n' layovers" << endl;                                         //Check, a pensar em mais
+    cout << "6 - Check maximum trips with the greatest number of stops between them" << endl;
+    cout << "7 - Check the airports with the most traffic" << endl;                                                 //Check
+    cout << "8 - Consult the essential airports" << endl;
     cout << "0 - Exit" << endl;
     cout << "--------------------------------------------------\n";
     cout << "Option:";
@@ -33,11 +33,10 @@ void printStatisticsMenu(){
 
 void printNumberFlightsMenu(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
-    cout << "You chose to check the number of flights!" << endl;
     cout << "Choose one option:" << endl;
-    cout << "1 - Check number of flights out of an airport" << endl;
-    cout << "2 - Check number of flights per city" << endl;
-    cout << "3 - Check number of flights per airline" << endl;
+    cout << "1 - Total flights of an airport" << endl;
+    cout << "2 - Total flights of a city" << endl;
+    cout << "3 - Total flights of an airline" << endl;
     cout << "0 - Return to the main menu" << endl;
     cout << "--------------------------------------------------\n";
     cout << "Option:";
@@ -159,22 +158,36 @@ void printDestinationWithStopsMenu(const FlightManagement& flightManagement){
  */
 
 
-void printGlobalAirports(const FlightManagement& flightManagement){
+void printGlobalStatistics(const FlightManagement& flightManagement){
     Graph<string> graph = flightManagement.getGraph();
     int numAirports = graph.getNumVertex();
+    int numAirlines = flightManagement.getAirlineMap().size();
 
     vector<Vertex<string>*> nodes = graph.getVertexSet();
     int numFlights = 0;
 
+    unordered_map<string, Airport*> airportMap = flightManagement.getAirportMap();
+    unordered_set<string> countriesSet;
+    unordered_set<string> citiesSet;
+
     for (Vertex<string> *node: nodes) {
         numFlights += node->getAdj().size();
+        Airport* airport = airportMap[node->getInfo()];
+        countriesSet.insert(airport->getCountry());
+        citiesSet.insert(airport->getCity());
     }
 
+
     cout << "--------------------------------------------------\n";
-    cout << "The global number of airports is " << numAirports << '.' << endl;
-    cout << "The global number of available flights is " << numFlights << '.' << endl;
+    cout << "There are a total of:" << endl;
+    cout << "     - " << numAirports << " airports;" << endl;
+    cout << "     - " << numFlights << " flights;" << endl;
+    cout << "     - " << numAirlines << " airlines;" << endl;
+    cout << "     - " << countriesSet.size() << " reachable countries;" << endl;
+    cout << "     - " << citiesSet.size() << " reachable cities." << endl;
 }           //Com O(n)
 
+/*
 void printGlobalFlights(const FlightManagement& flightManagement){
     Graph<string> graph = flightManagement.getGraph();
     vector<Vertex<string>*> nodes = graph.getVertexSet();
@@ -187,9 +200,9 @@ void printGlobalFlights(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
     cout << "The global number of available flights is " << numFlights << '.' << endl;
 }
+*/
 
-
-
+//CHECK - O(n)
 void printNumFlights_outAirport(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
     cout << "Enter the airport code [XXX]:";
@@ -198,31 +211,41 @@ void printNumFlights_outAirport(const FlightManagement& flightManagement){
     airportCode = upperCase(airportCode);
 
     Graph<string> graph = flightManagement.getGraph();
+    Vertex<string>* airport_ = graph.findVertex(airportCode);
 
-    for (Vertex<string>* node : graph.getVertexSet()){
+    if (airport_ != NULL) {
+        unordered_map<string, Airport*> mapa = flightManagement.getAirportMap();
+        Airport* airport = mapa[airportCode];
 
-        if(node->getInfo() == airportCode){
-
-            unordered_map<string, Airport*> mapa = flightManagement.getAirportMap();
-            Airport* airport = mapa[airportCode];
-
-
-            cout << "--------------------------------------------------\n";
-            cout << "The number of flights out of the Airport " << airport->getCode() << " (" << airport->getName() << ") is " << node->getAdj().size() << "." << endl;
-
-            unordered_set<string> uniqueAirlines;
-            for (const auto& edge : node->getAdj()) {
-                uniqueAirlines.insert(edge.getAirline());
-            }
-
-            cout << "Those flights are from " << uniqueAirlines.size() << " different airlines." << endl;
-            return;
+        unordered_set<string> uniqueAirlines;
+        for (const Edge<string>& edge : airport_->getAdj()) {
+            uniqueAirlines.insert(edge.getAirline());
         }
+
+        cout << "--------------------------------------------------\n";
+        cout << "The number of flights involving the airport " << airport->getCode() << " (" << airport->getName() << ") is " << airport_->getAdj().size() + airport_->getIndegree() << ":" << endl;
+
+        if (airport_->getAdj().size() == 1) {
+            cout << "   - There is 1 flight leaving the airport;" << endl;
+        } else {
+            cout << "   - There are " << airport_->getAdj().size() << " flights leaving the airport;" << endl;
+        }
+
+        if (airport_->getIndegree() == 1) {
+            cout << "   - There is 1 flight arriving the airport." << endl;
+        } else {
+            cout << "   - There are " << airport_->getIndegree() << " flights arriving in the airport." << endl;
+        }
+
+        cout << "Those flights are from " << uniqueAirlines.size() << " different airlines." << endl;
+
+        return;
     }
     cout << "--------------------------------------------------\n";
     cout << "Airport not found! Please try again." << endl;
-}    //Com n^2
+}
 
+//CHECK - O(n^2) -> Dá para melhorar?
 void printNumFlights_perCity(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
     cout << "Enter the city name:";
@@ -235,7 +258,6 @@ void printNumFlights_perCity(const FlightManagement& flightManagement){
     int numFlightsOutCity = 0;
 
     Graph<string> graph = flightManagement.getGraph();
-    vector<Vertex<string>*> nodes = graph.getVertexSet();
     unordered_map<string, Airport*> airports = flightManagement.getAirportMap();
     vector<string> airportsOfCity;
 
@@ -246,6 +268,15 @@ void printNumFlights_perCity(const FlightManagement& flightManagement){
         }
     }
 
+    if (airportsOfCity.empty()) {
+        cout << "--------------------------------------------------\n";
+        cout << "City not found! Please, try again." << endl;
+        return;
+    }
+
+
+    unordered_set<string> uniqueAirlines;
+
     //Depois confere quantos voos saem e chegam desses aeroportos
     for (const string& airportCode : airportsOfCity){
 
@@ -253,21 +284,21 @@ void printNumFlights_perCity(const FlightManagement& flightManagement){
         if (vertex != NULL) {
             numFlightsOutCity += vertex->getAdj().size();
             numFlightsToCity += vertex->getIndegree();
+
+            for (Edge<string> edge : vertex->getAdj()) {
+                uniqueAirlines.insert(edge.getAirline());
+            }
         }
     }
 
 
     cout << "--------------------------------------------------\n";
-    if (airportsOfCity.empty()) {
-        cout << "City not found! Please, try again." << endl;
-        return;
-    }
-    cout << "The number of flights involving the city " << cityName << " is " << (numFlightsToCity + numFlightsOutCity) << '.' << endl;
+    cout << "The number of flights involving the city of " << cityName << " is " << (numFlightsToCity + numFlightsOutCity) << ':' << endl;
 
     if (numFlightsOutCity == 1) {
-        cout << "   - There is 1 flight leaving the city." << endl;
+        cout << "   - There is 1 flight leaving the city;" << endl;
     } else {
-        cout << "   - There are " << numFlightsOutCity << " flights leaving the city." << endl;
+        cout << "   - There are " << numFlightsOutCity << " flights leaving the city;" << endl;
     }
 
     if (numFlightsToCity == 1) {
@@ -275,9 +306,10 @@ void printNumFlights_perCity(const FlightManagement& flightManagement){
     } else {
         cout << "   - There are " << numFlightsToCity << " flights arriving in the city." << endl;
     }
-}       //Com n^2
+    cout << "Those flights are from " << uniqueAirlines.size() << " different airlines." << endl;
+}
 
-//Check -- O(1)
+//CHECK - O(1)
 void printNumFlights_perAirline(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
     cout << "Enter the airline's code [XXX]:";
@@ -290,14 +322,14 @@ void printNumFlights_perAirline(const FlightManagement& flightManagement){
 
     cout << "--------------------------------------------------\n";
     if (it != airlineMap.end()) {
-        cout << "The number of flights operated by " << airlineCode << " is " << airlineMap[airlineCode]->getFlights() << '.' << endl;
+        cout << "The number of flights operated by " << airlineMap[airlineCode]->getName() << " (" << airlineCode << ")" << " is " << airlineMap[airlineCode]->getFlights() << '.' << endl;
     } else {
         cout << "Airline not found. Please try again." << endl;
     }
 }
 
 
-
+//O(NlogN)
 void printNumCountries_perAirport(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
     cout << "Enter the airport's code [XXX]:";
@@ -343,8 +375,9 @@ void printNumCountries_perAirport(const FlightManagement& flightManagement){
             cout << destination << endl;
         }
     }
-}  //Com NlogN
+}
 
+//O(n^2)
 void printNumCountries_perCity(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
     cout << "Enter the name of the city:";
@@ -402,8 +435,9 @@ void printNumCountries_perCity(const FlightManagement& flightManagement){
             cout << destination << endl;
         }
     }
-}     //Com n^2
+}
 
+//O(NlogN)
 void printNumAirports_perAirport(const FlightManagement& flightManagement){
     cout << "Enter the airport's code [XXX]:";
     string airportCode;
@@ -448,8 +482,9 @@ void printNumAirports_perAirport(const FlightManagement& flightManagement){
             cout << destination << endl;
         }
     }
-}  //Com NlogN
+}
 
+//O(NlogN)
 void printNumCities_perAirport(const FlightManagement& flightManagement){
     cout << "Enter the airport's code [XXX]:";
     string airportCode;
@@ -494,7 +529,7 @@ void printNumCities_perAirport(const FlightManagement& flightManagement){
             cout << destination << endl;
         }
     }
-}   //Com NlogN
+}
 
 
 
@@ -532,6 +567,7 @@ vector<string> reachableDest(const FlightManagement& flightManagement, const str
     return reachableDest;
 }
 
+//O(NlogN)
 void printStatisticWithStops(const FlightManagement& flightManagement) {
     unordered_map<string, Airport*> allAirports = flightManagement.getAirportMap();
 
@@ -690,6 +726,7 @@ void printList(const set<string>& set, bool b) {
 
 
 
+//TODO
 void printMaximumTrip(const FlightManagement& flightManagement){
     Graph<string> graph = flightManagement.getGraph();
     Vertex<string> * s = graph.getVertexSet().front();
@@ -709,11 +746,11 @@ void printMaximumTrip(const FlightManagement& flightManagement){
 }
 
 
-
-
+//CHECK -> Pensar em deixar + bonito
+//O(n)
 void printAirportsGreatestCapability(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
-    cout << "Enter the number of airports to be seen:";
+    cout << "Enter the number of airports to be seen (Maximum of " << flightManagement.getAirportMap().size() << " airports):";
     int k;
     cin >> k;
     cout << "--------------------------------------------------\n";
@@ -725,6 +762,8 @@ void printAirportsGreatestCapability(const FlightManagement& flightManagement){
         totalFlights.insert(make_pair(specificNode->getIndegree() + specificNode->getAdj().size(), specificNode->getInfo()));
     }
 
+
+    unordered_map<string, Airport *> airports = flightManagement.getAirportMap();
     cout << "Top " << k << " airports by traffic capacity:" << endl;
     int i = 0;
     for (const auto& airport : totalFlights) {
@@ -734,10 +773,11 @@ void printAirportsGreatestCapability(const FlightManagement& flightManagement){
         cout << i+1 << ". " << airport.second << " - " << airport.first << " flights" << endl;
         i++;
     }
-}       //Com O(n)
+}
 
 
 //308?
+//O(n^2)
 void printEssentialAirports(const FlightManagement& flightManagement){
     Graph<string> graph = flightManagement.getGraph();
     unordered_set<string> essentialAirports;
@@ -771,7 +811,7 @@ void printEssentialAirports(const FlightManagement& flightManagement){
         cout << left << setw(25) << airport->getCity() << " ";
         cout << left << setw(35) << airport->getName() << "\n";
     }
-}                //Com n^2
+}
 
 void dfs_art(const Graph<string>& g, Vertex<string> *v, unordered_set<string> &l, int &i){
     v->setProcessing(true);

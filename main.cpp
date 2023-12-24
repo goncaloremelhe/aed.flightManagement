@@ -15,33 +15,33 @@ int main() {
         cin >> option;
         switch (option){
             case '1':
-                printGlobalAirports(flightManagement);
+                printGlobalStatistics(flightManagement);
                 break;
                 /*
             case '2':
                 printGlobalFlights(flightManagement);
                 break;
                  */
-            case '3':
+            case '2':
                 printNumberFlightsMenu(flightManagement);
                 break;
-            case '4':
+            case '3':
                 printCountriesOptionsMenu(flightManagement);
                 break;
-            case '5':
+            case '4':
                 printDestinationOptionMenu(flightManagement);
                 break;
-            case '6':
+            case '5':
                 //printDestinationWithStopsMenu(flightManagement);
                 printStatisticWithStops(flightManagement);
                 break;
-            case '7':
+            case '6':
                 printMaximumTrip(flightManagement);
                 break;
-            case '8':
+            case '7':
                 printAirportsGreatestCapability(flightManagement);
                 break;
-            case '9':
+            case '8':
                 printEssentialAirports(flightManagement);
                 break;
             case '0':
