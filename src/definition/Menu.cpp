@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <limits>
 #include <iomanip>
+#include <cmath>
 
 struct airportComparator {
     bool operator()(const Airport* firstAirport, const Airport* secondAirport) const {
@@ -14,7 +15,16 @@ struct airportComparator {
 };
 
 
-void printStatisticsMenu(){
+void printMainMenu() {
+    cout << "--------------------------------------------------\n";
+    cout << "Choose one option:" << endl;
+    cout << "1 - Statistics" << endl;
+    cout << "2 - Find the best flight option" << endl;
+    cout << "0 - Exit" << endl;
+    cout << "--------------------------------------------------\n";
+    cout << "Option:";
+}
+void printStatisticsMenu(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
     cout << "Choose one option:" << endl;
     cout << "1 - Global statistics" << endl;                                                                        //Check
@@ -26,6 +36,34 @@ void printStatisticsMenu(){
     cout << "0 - Exit" << endl;
     cout << "--------------------------------------------------\n";
     cout << "Option:";
+    char option = '0';
+    cin >> option;
+    switch (option){
+        case '1':
+            printGlobalStatistics(flightManagement);
+            break;
+        case '2':
+            printNumberFlightsMenu(flightManagement);
+            break;
+        case '3':
+            printDestinationOptionMenu(flightManagement);
+            break;
+        case '4':
+            printLayoverMenu(flightManagement);
+            break;
+        case '5':
+            printAirportsGreatestCapability(flightManagement);
+            break;
+        case '6':
+            printEssentialAirports(flightManagement);
+            break;
+        case '0':
+            return;
+        default:
+            cout << "Invalid option. Exiting." << endl;
+            break;
+    }
+
 }
 void printNumberFlightsMenu(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
@@ -114,7 +152,339 @@ void printLayoverMenu(const FlightManagement& flightManagement) {
     }
 }
 
-//(1) - CHECK - O(n)
+
+void printBestFlight(const FlightManagement& flightManagement) {
+    char option = '0';
+    unordered_set<string> sourceLocation;
+    unordered_set<string> destLocation;
+
+    cout << "--------------------------------------------------\n";
+    cout << "Choose your source location:" << endl;
+    cout << "1 - Airport" << endl;
+    cout << "2 - City" << endl;
+    cout << "3 - Coordinates with range" << endl;
+    cout << "0 - Exit" << endl;
+    cout << "--------------------------------------------------\n";
+    cout << "Option:";
+    cin >> option;
+    switch (option){
+        case '1':
+            sourceLocation = findAirport(flightManagement);
+            break;
+        case '2':
+            sourceLocation = findAirportInCity(flightManagement);
+            break;
+        case '3':
+            sourceLocation = findAirportHaversine(flightManagement);
+            if (sourceLocation.empty()) {
+                cout << "--------------------------------------------------\n";
+                cout << "There's no airport inside the range you asked! Please, try again." << endl;
+                return;
+            }
+            break;
+        case '0':
+            cout << "Returning to the main menu." << endl;
+            return;
+        default:
+            cout << "Invalid option. Exiting." << endl;
+            return;
+    }
+    if (sourceLocation.empty()) {
+        cout << "Location not found! Please, try again." << endl;
+        return;
+    }
+
+    cout << "--------------------------------------------------\n";
+    cout << "Choose your destination location:" << endl;
+    cout << "1 - Airport" << endl;
+    cout << "2 - City" << endl;
+    cout << "3 - Coordinates with range" << endl;
+    cout << "0 - Exit" << endl;
+    cout << "--------------------------------------------------\n";
+    cout << "Option:";
+    cin >> option;
+    switch (option){
+        case '1':
+            destLocation = findAirport(flightManagement);
+            break;
+        case '2':
+            destLocation = findAirportInCity(flightManagement);
+            break;
+        case '3':
+            destLocation = findAirportHaversine(flightManagement);
+            if (destLocation.empty()) {
+                cout << "--------------------------------------------------\n";
+                cout << "There's no airport inside the range you asked! Please, try again." << endl;
+                return;
+            }
+            break;
+        case '0':
+            cout << "Returning to the main menu." << endl;
+            return;
+        default:
+            cout << "Invalid option. Exiting." << endl;
+            return;
+    }
+    if (destLocation.empty()) {
+        cout << "Location not found! Please, try again." << endl;
+        return;
+    }
+
+    bool flag = true;
+    bool least = false;
+    unordered_set<string> excludedLocation;
+    unordered_set<string> excludedAirline;
+    vector<list<string>> res;
+
+    while (flag) {
+        cout << "--------------------------------------------------\n";
+        cout << "Do you have any restriction?" << endl;
+        cout << "1 - Exclude countries" << endl;
+        cout << "2 - Exclude cities" << endl;
+        cout << "3 - Exclude airports" << endl;
+        cout << "4 - Exclude airlines" << endl;
+        cout << boolalpha;
+        cout << "5 - Use the least amount of airlines -> " << least << endl;
+        cout << endl;
+        cout << "6 - Continue" << endl;
+        cout << "0 - Exit" << endl;
+        cout << "--------------------------------------------------\n";
+        cout << "Option:";
+        cin >> option;
+        switch(option) {
+            case '1':
+                includeConstraint(flightManagement, excludedLocation, 1);
+                break;
+            case '2':
+                includeConstraint(flightManagement, excludedLocation, 2);
+                break;
+            case '3':
+                includeConstraint(flightManagement, excludedLocation, 3);
+                break;
+            case '4':
+                includeConstraint(flightManagement, excludedAirline, 4);
+                break;
+            case '5':
+                if (least) {
+                    least = false;
+                } else {
+                    least = true;
+                }
+                break;
+            case '6':
+                res = findFlight(flightManagement, sourceLocation, destLocation, excludedLocation, excludedAirline);
+                flag = false;
+                break;
+            default:
+                cout << "--------------------------------------------------\n";
+                cout << "Invalid option! Please, try again." << endl;
+                return;
+            case '0':
+                cout << "--------------------------------------------------\n";
+                cout << "Returning to main menu." << endl;
+                return;
+        }
+    }
+    unordered_map<string, Airport*> allAirports = flightManagement.getAirportMap();
+    Graph<string> graph = flightManagement.getGraph();
+
+    cout << "--------------------------------------------------\n\n";
+    if (res.empty()) {
+        cout << "It was not possible to find a trip meeting those criteria! Please, try again." << endl << endl;
+    }
+    for (const list<string>& path : res) {
+
+        auto it = path.begin();
+        Airport* airport = allAirports[*it];
+
+        for (int i = 0; i < path.size() - 1; i++) {
+
+            Vertex<string>* vertex = graph.findVertex(*it);
+            vector<Edge<string>> airlines = vertex->getAdj();
+            cout << airport->getCode() << ", " << capitalizeWords(airport->getCity()) << ", " << capitalizeWords(airport->getCountry()) << " ";
+            advance(it, 1);
+            airport = allAirports[*it];
+            cout << airport->getCode() << " " << capitalizeWords(airport->getCity()) << " " << capitalizeWords(airport->getCountry()) << " : ";
+
+            for (const auto & airline : airlines) {
+                if (airline.getDest()->getInfo() == airport->getCode() and excludedAirline.find(airline.getAirline()) == excludedAirline.end()) {
+                    cout << airline.getAirline() << " ";
+                }
+            }
+
+            cout << endl;
+        }
+        cout << endl;
+    }
+}
+
+void includeConstraint(const FlightManagement& flightManagement, unordered_set<string>& exclude, int mode) {
+    string constraint;
+    unordered_map<string, Airport*> airportMap = flightManagement.getAirportMap();
+    unordered_map<string, Airline*> airlineMap = flightManagement.getAirlineMap();
+
+    cout << "--------------------------------------------------\n";
+    if (mode != 4) {
+        cout << "Enter the name of the location you want to exclude (type 'end' when finished):" << endl;
+    } else {
+        cout << "Enter the name of the airline you want to exclude (type 'end' when finished):" << endl;
+    }
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    while (true) {
+        getline(cin, constraint);
+        cout << endl;
+
+        bool valid = false;
+        if (constraint == "end") {
+            break;
+        }
+
+        if (mode == 1) {
+            constraint = upperCase(constraint);
+            for (auto & it : airportMap) {
+                if (it.second->getCountry() == constraint) {
+                    exclude.insert(it.first);
+                    valid = true;
+                }
+            }
+        } else if (mode == 2) {
+            constraint = upperCase(constraint);
+            for (auto & it : airportMap) {
+                if (it.second->getCity() == constraint) {
+                    exclude.insert(it.first);
+                    valid = true;
+                }
+            }
+        } else if (mode == 3) {
+            constraint = upperCase(constraint);
+            auto it = airportMap.find(constraint);
+            if (it != airportMap.end()) {
+                exclude.insert(constraint);
+                valid = true;
+            }
+        } else {
+            constraint = upperCase(constraint);
+            auto it = airlineMap.find(constraint);
+            if (it != airlineMap.end()) {
+                exclude.insert(constraint);
+                valid = true;
+            }
+        }
+
+        if (!valid) {
+            cout << "--------------------------------------------------\n";
+            cout << "Invalid location. The location provided was not processed." << endl;
+            cout << "--------------------------------------------------\n";
+        }
+    }
+}
+
+list<string> shortestPath(const Graph<string>& graph, const string& source, const string& dest, const unordered_set<string>& excludeAirline, const unordered_set<string>& excludeLocation) {
+    list<string> path;
+    for (Vertex<string>* vertex : graph.getVertexSet()) {
+        if (excludeLocation.find(vertex->getInfo()) != excludeLocation.end()) {
+            vertex->setVisited(true);
+        } else {
+            vertex->setVisited(false);
+        }
+    }
+
+    Vertex<string>* sourceVertex = graph.findVertex(source);
+    Vertex<string>* destVertex = graph.findVertex(dest);
+
+    if (sourceVertex->isVisited() or destVertex->isVisited()) {
+        return path;
+    }
+
+    queue<string> q;
+    q.push(source);
+    sourceVertex->setVisited(true);
+    sourceVertex->setDistance(0);
+
+    while (!q.empty()) {
+        Vertex<string>* tempVertex = graph.findVertex(q.front());
+        q.pop();
+        for (const Edge<string>& edge : tempVertex->getAdj()) {
+            if (excludeAirline.find(edge.getAirline()) != excludeAirline.end()) {
+                continue;
+            }
+            Vertex<string>* neighbour = edge.getDest();
+            if (!neighbour->isVisited()) {
+                neighbour->setVisited(true);
+                q.push(neighbour->getInfo());
+                neighbour->setDistance(tempVertex->getDistance() + 1);
+                neighbour->setLastVisit(tempVertex->getInfo());
+            }
+        }
+    }
+
+    if (!destVertex->isVisited()) {
+        return path;
+    }
+
+    while (destVertex != sourceVertex) {
+        path.push_front(destVertex->getInfo());
+        destVertex = graph.findVertex(destVertex->getLastVisit());
+    }
+    path.push_front(source);
+    return path;
+}
+
+vector<list<string>> findFlight(const FlightManagement& flightManagement, const unordered_set<string>& sourceLocation, const unordered_set<string>& destLocation, const unordered_set<string>& excludeLocation, const unordered_set<string>& excludeAirline) {
+    Graph<string> graph = flightManagement.getGraph();
+    int minDis = INT_MAX;
+    for (const string& source : sourceLocation) {
+        Vertex<string> *s = graph.findVertex(source);
+        for (Vertex<string>* vertex : graph.getVertexSet()) {
+            if (excludeLocation.find(vertex->getInfo()) != excludeLocation.end()) {
+                vertex->setVisited(true);
+            } else {
+                vertex->setVisited(false);
+            }
+        }
+
+        if (!s->isVisited()) {
+            queue<Vertex<string> *> unvisited;
+            s->setDistance(0);
+            unvisited.push(s);
+            s->setVisited(true);
+            while (!unvisited.empty()) {
+                Vertex<string> *v = unvisited.front();
+                unvisited.pop();
+                for (const Edge<string> &neighbor: v->getAdj()) {
+                    Vertex<string> *w = neighbor.getDest();
+
+                    if (excludeLocation.find(w->getInfo()) != excludeLocation.end() or excludeAirline.find(neighbor.getAirline()) != excludeAirline.end()) {
+                        continue;
+                    }
+
+                    if (!w->isVisited()) {
+                        w->setDistance(v->getDistance() + 1);
+                        unvisited.push(w);
+                        w->setVisited(true);
+                    }
+                }
+
+                if (destLocation.find(v->getInfo()) != destLocation.end()) {
+                    minDis = min(v->getDistance(), minDis);
+                }
+            }
+        }
+    }
+
+    vector<list<string>> res;
+    for (const string& source : sourceLocation) {
+        for (const string& dest : destLocation) {
+            list<string> path = shortestPath(graph, source, dest, excludeAirline, excludeLocation);
+            if (path.size() - 1 == minDis) {
+                res.push_back(path);
+            }
+        }
+    }
+    return res;
+}
+
+
 void printGlobalStatistics(const FlightManagement& flightManagement){
     Graph<string> graph = flightManagement.getGraph();
     int numAirports = graph.getNumVertex();
@@ -145,7 +515,7 @@ void printGlobalStatistics(const FlightManagement& flightManagement){
 }
 
 
-//(2) - CHECK - O(n), O(n^2), O(1)
+
 void printNumFlights_outAirport(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
     cout << "Enter the airport code [XXX]:";
@@ -191,8 +561,8 @@ void printNumFlights_perCity(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
     cout << "Enter the city name:";
     string cityName;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    std::getline(std::cin, cityName);
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    getline(cin, cityName);
     cityName = upperCase(cityName);
 
     int numFlightsToCity = 0;
@@ -268,7 +638,7 @@ void printNumFlights_perAirline(const FlightManagement& flightManagement){
 }
 
 
-//(3) - CITY - O(NlogN), O(n^2)
+
 void printNumByAirport(const FlightManagement& flightManagement) {
     cout << "--------------------------------------------------\n";
     cout << "Enter the airport's code [XXX]:";
@@ -364,8 +734,8 @@ void printNumByCity(const FlightManagement& flightManagement) {
     cout << "--------------------------------------------------\n";
     cout << "Enter the name of the city:";
     string cityName;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    std::getline(std::cin, cityName);
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    getline(cin, cityName);
     cityName = upperCase(cityName);
 
     Graph<string> graph = flightManagement.getGraph();
@@ -465,40 +835,6 @@ void printNumByCity(const FlightManagement& flightManagement) {
 }
 
 
-//(4) - CHECK - O(NlogN)
-vector<string> reachableDest(const FlightManagement& flightManagement, const string& sourceAirportCode, int maxStops){
-    Graph<string> graph = flightManagement.getGraph();
-    Vertex<string> * s = graph.findVertex(sourceAirportCode);
-    vector<string> reachableDest;
-
-    if (s == NULL){
-        return reachableDest;
-    }
-
-    for (auto node : graph.getVertexSet()){
-        node->setVisited(false);
-    }
-
-    queue<Vertex<string> * > unvisited;
-    s->setDistance(0);
-    unvisited.push(s);
-    s->setVisited(true);
-    while(!unvisited.empty()){
-        Vertex<string>* v = unvisited.front();
-        unvisited.pop();
-        for (const Edge<string> &neighbor : v->getAdj()){
-            Vertex<string>* w = neighbor.getDest();
-            if(!w->isVisited()){
-                w->setDistance(v->getDistance()+1);
-                unvisited.push(w);
-                w->setVisited(true);}
-        }
-        if (v->getDistance() <= maxStops)
-            reachableDest.push_back(v->getInfo());
-    }
-
-    return reachableDest;
-}
 void printStatisticWithStops(const FlightManagement& flightManagement) {
     unordered_map<string, Airport*> allAirports = flightManagement.getAirportMap();
 
@@ -527,7 +863,8 @@ void printStatisticWithStops(const FlightManagement& flightManagement) {
     }
     int maxStops = stoi(maxStops_);
 
-    vector<string> reachable = reachableDest(flightManagement, sourceAirportCode, maxStops);
+    vector<string> reachable = flightManagement.getGraph().bfsDis(sourceAirportCode, maxStops, true);
+
 
     set<string> citiesDest;
     set<string> countriesDest;
@@ -542,7 +879,7 @@ void printStatisticWithStops(const FlightManagement& flightManagement) {
 
 
     cout << "--------------------------------------------------" << endl;
-    cout << "From " << sourceAirportCode << " (" << (*it).second->getCity() << ")" << ", with " << maxStops << " layovers, you can reach:" << endl;
+    cout << "From " << sourceAirportCode << " (" << capitalizeWords((*it).second->getCity()) << ")" << ", with " << maxStops << " layovers, you can reach:" << endl;
     cout << "     - " << reachable.size() - 1 << " airports;" << endl;
     cout << "     - " << citiesDest.size() << " cities;" << endl;
     cout << "     - " << countriesDest.size() << " countries." << endl;
@@ -580,7 +917,7 @@ void printStatisticWithStops(const FlightManagement& flightManagement) {
 
 }
 
-//(5) - CHECK
+
 int maxPathDistance(const FlightManagement& flightManagement, const string& sourceAirportCode) {
     Graph<string> graph = flightManagement.getGraph();
     Vertex<string> *s = graph.findVertex(sourceAirportCode);
@@ -625,7 +962,7 @@ void printMaximumTrip(const FlightManagement& flightManagement){
 
     vector<pair<string, vector<string>>> trips;
     for (Vertex<string>* vertex : graph.getVertexSet()) {
-        vector<string> dest = graph.bfsDis(vertex->getInfo(), maxDis);
+        vector<string> dest = graph.bfsDis(vertex->getInfo(), maxDis, false);
         if (!dest.empty()) {
             trips.emplace_back(vertex->getInfo(), dest);
         }
@@ -643,17 +980,16 @@ void printMaximumTrip(const FlightManagement& flightManagement){
         for (const string& dest : trip.second) {
             Airport* second = airports[dest];
             cout << left << setw(7) << source->getCode() << " "
-                 << left << setw(12) << source->getCountry() << " "
+                 << left << setw(12) << capitalizeWords(source->getCountry()) << " "
                  << left << setw(35) << source->getName() << " "
                  << left << setw(7) << second->getCode() << " "
-                 << left << setw(16) << second->getCountry() << " "
+                 << left << setw(16) << capitalizeWords(second->getCountry()) << " "
                  << left << setw(37) << second->getName() << "\n";
         }
     }
 }
 
 
-//(6) - CHECK -> Pensar em deixar + bonito - O(n)
 void printAirportsGreatestCapability(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
     cout << "Enter the number of airports to be seen (Maximum of " << flightManagement.getAirportMap().size() << " airports):";
@@ -682,8 +1018,6 @@ void printAirportsGreatestCapability(const FlightManagement& flightManagement){
 }
 
 
-//308?
-//(7) - CHECK - O(n^2)
 void printEssentialAirports(const FlightManagement& flightManagement){
     Graph<string> graph = flightManagement.getGraph();
     unordered_set<string> essentialAirports;
@@ -710,11 +1044,10 @@ void printEssentialAirports(const FlightManagement& flightManagement){
     for (const string& element : essentialAirports){
         airportSet.insert(allAirports[element]);
     }
-
     for (Airport* airport : airportSet) {
         cout << left << setw(6) << airport->getCode() << " ";
-        cout << left << setw(27) << airport->getCountry() << " ";
-        cout << left << setw(25) << airport->getCity() << " ";
+        cout << left << setw(27) << capitalizeWords(airport->getCountry()) << " ";
+        cout << left << setw(25) << capitalizeWords(airport->getCity()) << " ";
         cout << left << setw(35) << airport->getName() << "\n";
     }
 }
@@ -745,65 +1078,106 @@ void dfs_art(const Graph<string>& g, Vertex<string> *v, unordered_set<string> &l
 }
 
 
-void printAirport(const set<Airport *, airportComparator>& set, bool b) {
-    /*
-    cout << "--------------------------------------------------" << endl;
-    cout << "How many airports do you want to see? Maximum of " << set.size() << " airports." << endl;
-    string value;
-    while (true) {
-        cout << "Number of airports:";
-        cin >> value;
-        if (isNumber(value)) {
-            break;
-        } else {
-            cout << "Invalid input! Please, try again." << endl;
-            cout << "--------------------------------------------------" << endl;
+unordered_set<string> findAirportHaversine(const FlightManagement& flightManagement) {
+    unordered_set<string> source;
+    cout << "--------------------------------------------------\n";
+    cout << "Enter the approximated latitude:";
+    string latitude;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    getline(cin, latitude);
+
+    if (!isFloat(latitude)) {
+        cout << "--------------------------------------------------\n";
+        cout << "The input value was not valid! Please, try again." << endl;
+        return source;
+    }
+
+    cout << "Enter the approximated longitude:";
+    string longitude;
+    getline(cin, longitude);
+
+    if (!isFloat(longitude)) {
+        cout << "--------------------------------------------------\n";
+        cout << "The input value was not valid! Please, try again." << endl;
+        return source;
+    }
+
+    cout << "Enter the maximum distance of the nearby airports:";
+    string radius;
+    getline(cin, radius);
+
+    if (!isFloat(radius)) {
+        cout << "--------------------------------------------------\n";
+        cout << "The input value was not valid! Please, try again." << endl;
+        return source;
+    }
+
+    unordered_map<string, Airport*> airportMap = flightManagement.getAirportMap();
+    Graph<string> graph = flightManagement.getGraph();
+
+    for (Vertex<string>* vertex : graph.getVertexSet()) {
+        Airport* airport = airportMap[vertex->getInfo()];
+        double distance = haversineDistance(stod(latitude), stod(longitude), airport->getLatitude(), airport->getLongitude());
+        if (distance <= stod(radius)) {
+            source.insert(vertex->getInfo());
         }
     }
-    int val = stoi(value);
-     */
+    return source;
+}
+unordered_set<string> findAirport(const FlightManagement& flightManagement) {
+    cout << "--------------------------------------------------\n";
+    cout << "Enter the airport's code [XXX]:";
+    string airportCode;
+    cin >> airportCode;
+    airportCode = upperCase(airportCode);
+
+    unordered_set<string> source;
+    unordered_map<string, Airport*> airportsMap = flightManagement.getAirportMap();
+    auto it = airportsMap.find(airportCode);
+    if (it != airportsMap.end()) {
+        source.insert(airportCode);
+    }
+    return source;
+}
+unordered_set<string> findAirportInCity(const FlightManagement& flightManagement) {
+    cout << "--------------------------------------------------\n";
+    cout << "Enter the name of the city:";
+    string cityName;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    getline(cin, cityName);
+    cityName = upperCase(cityName);
+
+    unordered_set<string> source;
+    unordered_map<string, Airport*> airportMap = flightManagement.getAirportMap();
+    Graph<string> graph = flightManagement.getGraph();
+
+    for (Vertex<string>* vertex : graph.getVertexSet()) {
+        if (cityName == airportMap[vertex->getInfo()]->getCity()) {
+            source.insert(vertex->getInfo());
+        }
+    }
+    return source;
+}
+
+void printAirport(const set<Airport *, airportComparator>& set, bool b) {
     cout << "--------------------------------------------------" << endl;
     if (b) {
         cout << "Code   Country                     City                      Name" << endl;
         for (Airport* airport : set) {
             cout << left << setw(6) << airport->getCode() << " ";
-            cout << left << setw(27) << airport->getCountry() << " ";
-            cout << left << setw(25) << airport->getCity() << " ";
+            cout << left << setw(27) << capitalizeWords(airport->getCountry()) << " ";
+            cout << left << setw(25) << capitalizeWords(airport->getCity()) << " ";
             cout << left << setw(35) << airport->getName() << "\n";
-            //val--;
-            //if (val == 0) {
-            //    break;
-            //}
         }
     } else {
         cout << "Code   Name" << endl;
         for (Airport *airport: set) {
             cout << left << setw(6) << airport->getCode() << " ";
             cout << left << setw(35) << airport->getName() << "\n";
-            //val--;
-            //if (val == 0) {
-            //    break;
-            //}
         }
     }
 }
 void printList(const set<string>& set, bool b) {
-    /*
-    cout << "--------------------------------------------------" << endl;
-    cout << "How many cities/countries do you want to see? Maximum of " << set.size() << " cities/countries." << endl;
-    string value;
-    while (true) {
-        cout << "Number of cities/countries:";
-        cin >> value;
-        if (isNumber(value)) {
-            break;
-        } else {
-            cout << "Invalid input! Please, try again." << endl;
-            cout << "--------------------------------------------------" << endl;
-        }
-    }
-    int val = stoi(value);
-     */
     cout << "--------------------------------------------------" << endl;
     if (b) {
         cout << "City" << endl;
@@ -811,12 +1185,21 @@ void printList(const set<string>& set, bool b) {
         cout << "Country" << endl;
     }
     for (const string& str : set) {
-        cout << str << "\n";
-        //val--;
-        //if (val == 0) {
-        //    break;
-        //}
+        cout << capitalizeWords(str) << "\n";
     }
+}
+
+double haversineDistance(double latA, double lonA, double latB, double lonB) {
+    latA = (latA) * M_PI / 180.0;
+    latB = (latB) * M_PI / 180.0;
+
+    double vlat = latB - latA;
+    double vlon = lonB - lonA;
+
+    double a = pow(sin(vlat / 2), 2) + pow(sin(vlon / 2), 2) * cos(latA) * cos(latB);
+    double rad = 6365;
+    double c = 2 * asin(sqrt(a));
+    return rad * c;
 }
 string upperCase(const string& str) {
     string s;
@@ -825,11 +1208,27 @@ string upperCase(const string& str) {
     }
     return s;
 }
-bool isNumber(const string& str) {
-    for (char c : str) {
-        if (!isdigit(c)) {
-            return false;
+string capitalizeWords(const string& str) {
+    string result = str;
+    bool capitalizeNext = true;
+
+    for (char& c : result) {
+        if (isspace(c)) {
+            capitalizeNext = true;
+        } else {
+            if (capitalizeNext) {
+                c = toupper(c);
+                capitalizeNext = false;
+            } else {
+                c = tolower(c);
+            }
         }
     }
-    return true;
+
+    return result;
+}
+bool isFloat(const string& str) {
+    char* end = nullptr;
+    double val = strtod(str.c_str(), &end);
+    return end != str.c_str() && *end == '\0' && val != HUGE_VAL;
 }

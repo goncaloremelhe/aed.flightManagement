@@ -11,26 +11,14 @@ int main() {
     char option = '0';
     bool flag = true;
     while (flag) {
-        printStatisticsMenu();
+        printMainMenu();
         cin >> option;
         switch (option){
             case '1':
-                printGlobalStatistics(flightManagement);
+                printStatisticsMenu(flightManagement);
                 break;
             case '2':
-                printNumberFlightsMenu(flightManagement);
-                break;
-            case '3':
-                printDestinationOptionMenu(flightManagement);
-                break;
-            case '4':
-                printLayoverMenu(flightManagement);
-                break;
-            case '5':
-                printAirportsGreatestCapability(flightManagement);
-                break;
-            case '6':
-                printEssentialAirports(flightManagement);
+                printBestFlight(flightManagement);
                 break;
             case '0':
                 flag = false;

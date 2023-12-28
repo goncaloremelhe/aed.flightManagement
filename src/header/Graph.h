@@ -30,6 +30,7 @@
         int distance;
         int num;               // auxiliary field
         int low;               // auxiliary field
+        string lastVisit;
         void addEdge(Vertex<T> *dest, double w, string airline);
         bool removeEdgeTo(Vertex<T> *d);
     public:
@@ -51,6 +52,8 @@
         void setNum(int num);
         int getLow() const;
         void setLow(int low);
+        string getLastVisit() const;
+        void setLastVisit(const string& lastVisit_);
     };
 
     template <class T>
@@ -86,7 +89,7 @@
         vector<T> dfs() const;
         vector<T> dfs(const T & source) const;
         vector<T> bfs(const T &source) const;
-        vector<T> bfsDis(const T &source, int distance) const;
+        vector<T> bfsDis(const T &source, int distance, bool all);
         vector<T> topsort() const;
         bool isDAG() const;
     };
@@ -228,6 +231,15 @@
         return distance;
     }
 
+    template<class T>
+    void Vertex<T>::setLastVisit(const string& lastVisit_) {
+        Vertex::lastVisit = lastVisit_;
+    }
+
+    template<class T>
+    string Vertex<T>::getLastVisit() const {
+        return lastVisit;
+    }
 
     template <class T>
     bool Graph<T>::addVertex(const T &in) {
@@ -356,7 +368,7 @@
     }
 
     template <class T>
-    vector<T> Graph<T>::bfsDis(const T &source, int distance) const {
+    vector<T> Graph<T>::bfsDis(const T &source, int distance, bool all)  {
         vector<T> res;
         auto s = findVertex(source);
         if (s == NULL){
@@ -380,8 +392,15 @@
                     unvisited.push(w);
                     w->setVisited(true);}
             }
-            if (v->getDistance() == distance)
-                res.push_back(v->getInfo());
+            if (all) {
+                if (v->getDistance() <= distance) {
+                    res.push_back(v->getInfo());
+                }
+            } else {
+                if (v->getDistance() == distance) {
+                    res.push_back(v->getInfo());
+                }
+            }
         }
 
         return res;

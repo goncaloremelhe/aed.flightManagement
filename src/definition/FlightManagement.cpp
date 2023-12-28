@@ -65,6 +65,7 @@ void FlightManagement::readAirport() {
         float newLongitude = stof(longitude);
 
         city = upperCase(city);
+        country = upperCase(country);
 
         Airport tempAirport(code, name, city, country, newLatitude, newLongitude);
         flightManagement.addVertex(code);

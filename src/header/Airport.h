@@ -5,6 +5,7 @@
 using namespace std;
 
 class Airport {
+private:
     string code, name, city, country;
     float latitude;
     float longitude;
