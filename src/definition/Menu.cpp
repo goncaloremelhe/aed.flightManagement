@@ -243,7 +243,7 @@ void printBestFlight(const FlightManagement& flightManagement) {
     bool least = false;
     unordered_set<string> excludedLocation;
     unordered_set<string> excludedAirline;
-    vector<list<string>> res;
+    vector<pair<list<string>, unordered_set<string>>>  res;
 
     while (flag) {
         cout << "--------------------------------------------------\n";
@@ -253,7 +253,7 @@ void printBestFlight(const FlightManagement& flightManagement) {
         cout << "3 - Exclude airports" << endl;
         cout << "4 - Exclude airlines" << endl;
         cout << boolalpha;
-        cout << "5 - Use the least amount of airlines -> " << least << endl;
+        cout << "5 - Minimize the number of airlines (choose this option to switch to \"" << !least << "\" mode)" << endl;
         cout << endl;
         cout << "6 - Continue" << endl;
         cout << "0 - Exit" << endl;
@@ -274,14 +274,10 @@ void printBestFlight(const FlightManagement& flightManagement) {
                 includeConstraint(flightManagement, excludedAirline, 4);
                 break;
             case '5':
-                if (least) {
-                    least = false;
-                } else {
-                    least = true;
-                }
+                least = !least;
                 break;
             case '6':
-                res = findFlight(flightManagement, sourceLocation, destLocation, excludedLocation, excludedAirline);
+                res = findFlight(flightManagement, sourceLocation, destLocation, excludedLocation, excludedAirline, least);
                 flag = false;
                 break;
             default:
@@ -301,24 +297,32 @@ void printBestFlight(const FlightManagement& flightManagement) {
     if (res.empty()) {
         cout << "It was not possible to find a trip meeting those criteria! Please, try again." << endl << endl;
     }
-    for (const list<string>& path : res) {
+
+    for (const auto& result : res) {
+        const list<string>& path = result.first;
+        const unordered_set<string>& usedAirlines = result.second;
 
         auto it = path.begin();
         Airport* airport = allAirports[*it];
 
         for (int i = 0; i < path.size() - 1; i++) {
-
             Vertex<string>* vertex = graph.findVertex(*it);
             vector<Edge<string>> airlines = vertex->getAdj();
-            cout << airport->getCode() << ", " << capitalizeWords(airport->getCity()) << ", " << capitalizeWords(airport->getCountry()) << " ";
+
+            cout << airport->getCode() << ", " << capitalizeWords(airport->getCity()) << ", " << capitalizeWords(airport->getCountry()) << " to ";
             advance(it, 1);
             airport = allAirports[*it];
-            cout << airport->getCode() << " " << capitalizeWords(airport->getCity()) << " " << capitalizeWords(airport->getCountry()) << " : ";
+            cout << airport->getCode() << ", " << capitalizeWords(airport->getCity()) << ", " << capitalizeWords(airport->getCountry()) << ":";
 
-            for (const auto & airline : airlines) {
-                if (airline.getDest()->getInfo() == airport->getCode() and excludedAirline.find(airline.getAirline()) == excludedAirline.end()) {
-                    cout << airline.getAirline() << " ";
+            for (const auto& airline : airlines) {
+                if (!least){
+                    if (airline.getDest()->getInfo() == airport->getCode() and excludedAirline.find(airline.getAirline()) == excludedAirline.end())
+                        cout << airline.getAirline() << " ";
+                } else {
+                    if (airline.getDest()->getInfo() == airport->getCode() && usedAirlines.find(airline.getAirline()) != usedAirlines.end())
+                        cout << airline.getAirline() << " ";
                 }
+
             }
 
             cout << endl;
@@ -386,8 +390,11 @@ void includeConstraint(const FlightManagement& flightManagement, unordered_set<s
         }
     }
 }
-list<string> shortestPath(const Graph<string>& graph, const string& source, const string& dest, const unordered_set<string>& excludeAirline, const unordered_set<string>& excludeLocation) {
+
+
+list<string> shortestPath(const Graph<string>& graph, const string& source, const string& dest, const unordered_set<string>& excludeAirline, const unordered_set<string>& excludeLocation, unordered_set<string>& currentAirlines) {
     list<string> path;
+
     for (Vertex<string>* vertex : graph.getVertexSet()) {
         if (excludeLocation.find(vertex->getInfo()) != excludeLocation.end()) {
             vertex->setVisited(true);
@@ -411,18 +418,32 @@ list<string> shortestPath(const Graph<string>& graph, const string& source, cons
     while (!q.empty()) {
         Vertex<string>* tempVertex = graph.findVertex(q.front());
         q.pop();
+
+        unordered_set<string> currentAirlinesCopy = currentAirlines;
+
         for (const Edge<string>& edge : tempVertex->getAdj()) {
-            if (excludeAirline.find(edge.getAirline()) != excludeAirline.end()) {
+            Vertex<string>* neighbour = edge.getDest();
+
+            if (excludeAirline.find(edge.getAirline()) != excludeAirline.end() || excludeLocation.find(neighbour->getInfo()) != excludeLocation.end()) {
                 continue;
             }
-            Vertex<string>* neighbour = edge.getDest();
+
             if (!neighbour->isVisited()) {
                 neighbour->setVisited(true);
                 q.push(neighbour->getInfo());
                 neighbour->setDistance(tempVertex->getDistance() + 1);
                 neighbour->setLastVisit(tempVertex->getInfo());
+
+                currentAirlinesCopy.insert(edge.getAirline());
             }
+
+            if (neighbour->getInfo() == dest) {
+                currentAirlines = currentAirlinesCopy;
+                break;
+            }
+
         }
+
     }
 
     if (!destVertex->isVisited()) {
@@ -436,7 +457,8 @@ list<string> shortestPath(const Graph<string>& graph, const string& source, cons
     path.push_front(source);
     return path;
 }
-vector<list<string>> findFlight(const FlightManagement& flightManagement, const unordered_set<string>& sourceLocation, const unordered_set<string>& destLocation, const unordered_set<string>& excludeLocation, const unordered_set<string>& excludeAirline) {
+
+vector<pair<list<string>, unordered_set<string>>>  findFlight(const FlightManagement& flightManagement, const unordered_set<string>& sourceLocation, const unordered_set<string>& destLocation, const unordered_set<string>& excludeLocation, const unordered_set<string>& excludeAirline, bool least) {
     Graph<string> graph = flightManagement.getGraph();
     int minDis = INT_MAX;
     for (const string& source : sourceLocation) {
@@ -478,17 +500,23 @@ vector<list<string>> findFlight(const FlightManagement& flightManagement, const 
         }
     }
 
-    vector<list<string>> res;
+
+    vector<pair<list<string>, unordered_set<string>>> res;
     for (const string& source : sourceLocation) {
         for (const string& dest : destLocation) {
-            list<string> path = shortestPath(graph, source, dest, excludeAirline, excludeLocation);
+            unordered_set<string> currentAirlines;
+
+            list<string> path = shortestPath(graph, source, dest, excludeAirline, excludeLocation, currentAirlines);
+
             if (path.size() - 1 == minDis) {
-                res.push_back(path);
+                res.push_back(make_pair(path, currentAirlines));
             }
         }
     }
     return res;
 }
+
+
 
 
 void printGlobalStatistics(const FlightManagement& flightManagement){
