@@ -7,13 +7,21 @@
 #include <limits>
 #include <iomanip>
 #include <cmath>
+#include <map>
 
 struct airportComparator {
     bool operator()(const Airport* firstAirport, const Airport* secondAirport) const {
         return *firstAirport < *secondAirport;
     }
 };
+struct AirportData {
+    string code;
+    int incomingFlights;
+    int outgoingFlights;
+    int totalFlights;
 
+    AirportData(string c, int in, int out) : code(std::move(c)), incomingFlights(in), outgoingFlights(out), totalFlights(in + out) {}
+};
 
 void printMainMenu() {
     cout << "--------------------------------------------------\n";
@@ -1002,30 +1010,97 @@ void printMaximumTrip(const FlightManagement& flightManagement){
 void printAirportsGreatestCapability(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
     cout << "Enter the number of airports to be seen (Maximum of " << flightManagement.getAirportMap().size() << " airports):";
+    string kString;
+    cin >> kString;
+
     int k;
-    cin >> k;
-    cout << "--------------------------------------------------\n";
-
-    Graph<string> graph = flightManagement.getGraph();
-    set<pair<int, string>, greater<>> totalFlights;
-
-    for (Vertex<string>* specificNode : graph.getVertexSet()){
-        totalFlights.insert(make_pair(specificNode->getIndegree() + specificNode->getAdj().size(), specificNode->getInfo()));
+    if (isNumber(kString)) {
+        k = stoi(kString);
+    } else {
+        cout << "--------------------------------------------------\n";
+        cout << "Input not valid! Please, try again." << endl;
+        return;
     }
 
+    cout << "--------------------------------------------------\n";
+    cout << "Choose one option:" << endl;
+    cout << "1 - Order by number of incoming flights" << endl;
+    cout << "2 - Order by number of outgoing flights" << endl;
+    cout << "3 - Order by total number of flights" << endl;
+    cout << "--------------------------------------------------\n";
+    cout << "Option:";
+    char optionChar;
+    cin >> optionChar;
+
+    int option = optionChar - '0';
+    if (option > 3 or option < 1) {
+        cout << "--------------------------------------------------\n";
+        cout << "Input not valid! Please, try again." << endl;
+        return;
+    }
+
+    cout << "--------------------------------------------------\n";
+    Graph<string> graph = flightManagement.getGraph();
+    vector<AirportData> airportData;
+
+    for (Vertex<string>* specificNode : graph.getVertexSet()){
+        AirportData airportData_ = {specificNode->getInfo() ,specificNode->getIndegree(), static_cast<int>(specificNode->getAdj().size())};
+        airportData.push_back(airportData_);
+    }
+
+    if (option == 1) {
+        sort(airportData.begin(), airportData.end(), [](const AirportData& a, const AirportData& b) {
+            if (a.incomingFlights == b.incomingFlights) {return a.code > b.code;}
+            return a.incomingFlights > b.incomingFlights;
+        });
+    } else if (option == 2) {
+        sort(airportData.begin(), airportData.end(), [](const AirportData& a, const AirportData& b) {
+            if (a.outgoingFlights == b.outgoingFlights) {return a.code > b.code;}
+            return a.outgoingFlights > b.outgoingFlights;
+        });
+    } else if (option == 3) {
+        sort(airportData.begin(), airportData.end(), [](const AirportData& a, const AirportData& b) {
+            if (a.totalFlights == b.totalFlights) {return a.code > b.code;}
+            return a.totalFlights > b.totalFlights;
+        });
+    }
 
     unordered_map<string, Airport *> airports = flightManagement.getAirportMap();
-    cout << "Top " << k << " airports by traffic capacity:" << endl;
+    cout << "Top " << k << " airports by traffic capacity" << endl;
+    cout << endl;
+    cout << "      CODE   COUNTRY                   CITY                IN       OUT      TOTAL   NAME" << endl;
     int i = 0;
-    for (const auto& airport : totalFlights) {
+    for (const AirportData& airport : airportData) {
         if (i >= k) {
             break;
         }
-        cout << i+1 << ". " << airport.second << " - " << airport.first << " flights" << endl;
+        string s = to_string(i+1) + ".";
+
+        string countryName = capitalizeWords(airports[airport.code]->getCountry());
+        if (countryName.length() > 25) {
+            countryName = countryName.substr(0,22) + "...";
+        }
+
+        string airportName = airports[airport.code]->getName();
+        if (airportName.length() > 31) {
+            airportName = airportName.substr(0,28) + "...";
+        }
+
+        string cityName = capitalizeWords(airports[airport.code]->getCity());
+        if (cityName.length() > 19) {
+            cityName = cityName.substr(0,16) + "...";
+        }
+        cout << left << setw(5) << s << " "
+                     << setw(6) << airport.code << " "
+                     << setw(25) << countryName << " "
+                     << setw(19) << cityName << " "
+                     << setw(8) << airport.incomingFlights << " "
+                     << setw(8) << airport.outgoingFlights << " "
+                     << setw(7) << airport.totalFlights << " "
+                     << setw(31) << airportName << endl;
         i++;
     }
 }
-
 
 void printEssentialAirports(const FlightManagement& flightManagement){
     Graph<string> graph = flightManagement.getGraph();
@@ -1274,4 +1349,12 @@ bool isFloat(const string& str) {
     char* end = nullptr;
     double val = strtod(str.c_str(), &end);
     return end != str.c_str() && *end == '\0' && val != HUGE_VAL;
+}
+bool isNumber(const string& str) {
+    for (char c : str) {
+        if (!isdigit(c)) {
+            return false;
+        }
+    }
+    return true;
 }
