@@ -615,7 +615,7 @@ void printNumFlights_perCity(const FlightManagement& flightManagement){
 
 
     cout << "--------------------------------------------------\n";
-    cout << "The number of flights involving the city of " << cityName << " is " << (numFlightsToCity + numFlightsOutCity) << ':' << endl;
+    cout << "The number of flights involving the city of " << capitalizeWords(cityName) << " is " << (numFlightsToCity + numFlightsOutCity) << ':' << endl;
 
     if (numFlightsOutCity == 1) {
         cout << "   - There is 1 flight leaving the city;" << endl;
@@ -757,10 +757,11 @@ void printNumByCity(const FlightManagement& flightManagement) {
     for (pair<const string, Airport*> element : allAirports) {
         if(element.second->getCity() == cityName){
             uniqueCountries[element.second->getCountry()].push_back(element.first);
+            airportsOfCity.push_back(element.first);
         }
     }
 
-    if (airportsOfCity.empty()) {
+    if (uniqueCountries.empty()) {
         cout << "City not found! Please, try again." << endl;
         return;
     } else if (uniqueCountries.size() != 1) {
@@ -986,7 +987,7 @@ void printMaximumTrip(const FlightManagement& flightManagement){
 
     }
 
-    cout << "The max trip has " << maxDis << " layovers!" << endl;
+    cout << "The maximum trip has " << maxDis << " layovers!" << endl;
     cout << "--------------------------------------------------\n";
     cout << "FROM                                                     TO" << endl;
     cout << "CODE    COUNTRY      NAME                                CODE    COUNTRY          NAME" << endl;
@@ -1238,13 +1239,15 @@ unordered_set<string> findAirportInCity(const FlightManagement& flightManagement
 
     for (Vertex<string>* vertex : graph.getVertexSet()) {
         if (cityName == airportMap[vertex->getInfo()]->getCity()) {
+            source.insert(vertex->getInfo());
             uniqueCountries[airportMap[vertex->getInfo()]->getCountry()].push_back(vertex->getInfo());
         }
     }
-    if (uniqueCountries.size() != 1) {
+    if (uniqueCountries.size() > 1) {
         auto it = uniqueCountries.begin();
         int option = multiCityChoice(uniqueCountries, cityName);
         advance(it, option - 1);
+        source = {};
         for (const string& aeroporto : (*it).second) {
             source.insert(aeroporto);
         }
@@ -1280,15 +1283,26 @@ int multiCityChoice(const unordered_map<string, vector<string>>& options, const 
 void printAirport(const set<Airport *, airportComparator>& set, bool b) {
     cout << "--------------------------------------------------" << endl;
     if (b) {
-        cout << "Code   Country                     City                      Name" << endl;
+        cout << "CODE   COUNTRY                     CITY                      NAME" << endl;
         for (Airport* airport : set) {
+
+            string countryName = capitalizeWords(airport->getCountry());
+            if (countryName.length() > 27) {
+                countryName = countryName.substr(0,24) + "...";
+            }
+
+            string cityName = capitalizeWords(airport->getCity());
+            if (cityName.length() > 25) {
+                cityName = cityName.substr(0,22) + "...";
+            }
+
             cout << left << setw(6) << airport->getCode() << " ";
-            cout << left << setw(27) << capitalizeWords(airport->getCountry()) << " ";
-            cout << left << setw(25) << capitalizeWords(airport->getCity()) << " ";
+            cout << left << setw(27) << countryName << " ";
+            cout << left << setw(25) << cityName << " ";
             cout << left << setw(35) << airport->getName() << "\n";
         }
     } else {
-        cout << "Code   Name" << endl;
+        cout << "CODE   NAME" << endl;
         for (Airport *airport: set) {
             cout << left << setw(6) << airport->getCode() << " ";
             cout << left << setw(35) << airport->getName() << "\n";
@@ -1298,9 +1312,9 @@ void printAirport(const set<Airport *, airportComparator>& set, bool b) {
 void printList(const set<string>& set, bool b) {
     cout << "--------------------------------------------------" << endl;
     if (b) {
-        cout << "City" << endl;
+        cout << "CITY" << endl;
     } else {
-        cout << "Country" << endl;
+        cout << "COUNTRY" << endl;
     }
     for (const string& str : set) {
         cout << capitalizeWords(str) << "\n";
