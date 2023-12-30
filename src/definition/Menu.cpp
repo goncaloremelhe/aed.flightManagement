@@ -136,8 +136,9 @@ void printDestinationOptionMenu(const FlightManagement& flightManagement) {
 void printLayoverMenu(const FlightManagement& flightManagement) {
     cout << "--------------------------------------------------\n";
     cout << "Choose one option:" << endl;
-    cout << "1 - Consult reachable destinations with 'n' layovers" << endl;
-    cout << "2 - Check the trips with the greatest number of layovers" << endl;
+    cout << "1 - Consult reachable and unreachable destinations" << endl;
+    cout << "2 - Consult reachable and unreachable destinations with 'n' layovers" << endl;
+    cout << "3 - Check the trips with the greatest number of layovers" << endl;
     cout << "0 - Return to the main menu" << endl;
     cout << "--------------------------------------------------\n";
     cout << "Option:";
@@ -145,9 +146,12 @@ void printLayoverMenu(const FlightManagement& flightManagement) {
     cin >> option;
     switch (option){
         case '1':
-            printStatisticWithStops(flightManagement);
+            printMaximumDestinations(flightManagement);
             break;
         case '2':
+            printStatisticWithStops(flightManagement);
+            break;
+        case '3':
             printMaximumTrip(flightManagement);
             break;
         case '0':
@@ -390,8 +394,6 @@ void includeConstraint(const FlightManagement& flightManagement, unordered_set<s
         }
     }
 }
-
-
 list<string> shortestPath(const Graph<string>& graph, const string& source, const string& dest, const unordered_set<string>& excludeAirline, const unordered_set<string>& excludeLocation, unordered_set<string>& currentAirlines) {
     list<string> path;
 
@@ -457,8 +459,7 @@ list<string> shortestPath(const Graph<string>& graph, const string& source, cons
     path.push_front(source);
     return path;
 }
-
-vector<pair<list<string>, unordered_set<string>>>  findFlight(const FlightManagement& flightManagement, const unordered_set<string>& sourceLocation, const unordered_set<string>& destLocation, const unordered_set<string>& excludeLocation, const unordered_set<string>& excludeAirline) {
+vector<pair<list<string>, unordered_set<string>>> findFlight(const FlightManagement& flightManagement, const unordered_set<string>& sourceLocation, const unordered_set<string>& destLocation, const unordered_set<string>& excludeLocation, const unordered_set<string>& excludeAirline) {
     Graph<string> graph = flightManagement.getGraph();
     int minDis = INT_MAX;
     for (const string& source : sourceLocation) {
@@ -547,7 +548,6 @@ void printGlobalStatistics(const FlightManagement& flightManagement){
     cout << "     - " << countriesSet.size() << " reachable countries;" << endl;
     cout << "     - " << citiesSet.size() << " reachable cities." << endl;
 }
-
 
 void printNumFlights_outAirport(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
@@ -676,8 +676,6 @@ void printNumFlights_perAirline(const FlightManagement& flightManagement){
     }
 }
 
-
-
 void printNumByAirport(const FlightManagement& flightManagement) {
     cout << "--------------------------------------------------\n";
     cout << "Enter the airport's code [XXX]:";
@@ -737,37 +735,7 @@ void printNumByAirport(const FlightManagement& flightManagement) {
         cout << "     - " << numAirports << " different airports." << endl;
     }
 
-    cout << "--------------------------------------------------" << endl;
-    cout << "Do you want to consult any of the results?" << endl;
-    cout << "1. Only airports" << endl;
-    cout << "2. Only cities" << endl;
-    cout << "3. Only countries" << endl;
-    cout << "4. Countries, cities and airports" << endl;
-    cout << "0. None of them" << endl;
-    cout << "--------------------------------------------------" << endl;
-    cout << "Option:";
-    char option = '0';
-    cin >> option;
-    switch (option) {
-        case '0':
-            return;
-        case '1':
-            printAirport(airportDest, false);
-            break;
-        case '2':
-            printList(cities, true);
-            break;
-        case '3':
-            printList(countries, false);
-            break;
-        case '4':
-            printAirport(airportDest, true);
-            break;
-        default:
-            cout << "--------------------------------------------------" << endl;
-            cout << "Invalid option! Please, try again." << endl;
-            return;
-    }
+    printDestinationsPrintOption(flightManagement, airportDest, cities, countries);
 }
 void printNumByCity(const FlightManagement& flightManagement) {
     cout << "--------------------------------------------------\n";
@@ -846,8 +814,38 @@ void printNumByCity(const FlightManagement& flightManagement) {
         cout << "     - " << numAirports << " different airports." << endl;
     }
 
+    printDestinationsPrintOption(flightManagement, airportSet, cities, countries);
+}
+
+void printDestinationsPrintOption(const FlightManagement& flightManagement, const set<Airport*, airportComparator>& airportSet, const set<string>& citiesDest, const set<string>& countriesDest) {
     cout << "--------------------------------------------------" << endl;
     cout << "Do you want to consult any of the results?" << endl;
+    cout << "1 - Reachable destinations" << endl;
+    cout << "2 - Unreachable destinations" << endl;
+    cout << "0 - Neither of them" << endl;
+    cout << "--------------------------------------------------" << endl;
+    cout << "Option:";
+    char option = '0';
+    bool reachable;
+    cin >> option;
+    switch (option) {
+        case '1':
+            reachable = true;
+            break;
+        case '2':
+            reachable = false;
+            break;
+        case '0':
+            cout << "--------------------------------------------------" << endl;
+            cout << "Returning to the main menu..." << endl;
+            return;
+        default:
+            cout << "--------------------------------------------------" << endl;
+            cout << "Invalid option! Please try again." << endl;
+            return;
+    }
+    cout << "--------------------------------------------------" << endl;
+    cout << "Choose one option:" << endl;
     cout << "1. Only airports" << endl;
     cout << "2. Only cities" << endl;
     cout << "3. Only countries" << endl;
@@ -855,32 +853,69 @@ void printNumByCity(const FlightManagement& flightManagement) {
     cout << "0. None of them" << endl;
     cout << "--------------------------------------------------" << endl;
     cout << "Option:";
-    char option = '0';
-    cin >> option;
-    switch (option) {
+    char option1 = '0';
+    cin >> option1;
+    switch (option1) {
         case '0':
+            cout << "--------------------------------------------------" << endl;
+            cout << "Returning to the main menu..." << endl;
             return;
         case '1':
-            printAirport(airportSet, false);
+            printAirport(flightManagement, airportSet, false, reachable);
             break;
         case '2':
-            printList(cities, true);
+            printList(flightManagement, citiesDest, true, reachable);
             break;
         case '3':
-            printList(countries, false);
+            printList(flightManagement, countriesDest, false, reachable);
             break;
         case '4':
-            printAirport(airportSet, true);
+            printAirport(flightManagement ,airportSet, true, reachable);
             break;
         default:
             cout << "--------------------------------------------------" << endl;
             cout << "Invalid option! Please, try again." << endl;
             return;
     }
-
 }
+void printMaximumDestinations(const FlightManagement& flightManagement) {
+    unordered_map<string, Airport*> allAirports = flightManagement.getAirportMap();
+    Graph<string> graph = flightManagement.getGraph();
 
+    cout << "--------------------------------------------------\n";
+    cout << "Enter the source airport's code [XXX]:";
+    string sourceAirportCode;
+    cin >> sourceAirportCode;
+    sourceAirportCode = upperCase(sourceAirportCode);
 
+    unordered_map<string, Airport *>::iterator it;
+    it = allAirports.find(sourceAirportCode);
+    if (it == allAirports.end()) {
+        cout << "Airport not found! Please, try again." << endl;
+        return;
+    }
+
+    vector<string> res = graph.dfs(sourceAirportCode);
+
+    set<string> citiesDest;
+    set<string> countriesDest;
+    set<Airport*, airportComparator> airportSet;
+
+    for (const string& destinationAirport : res) {
+        Airport* airport = allAirports[destinationAirport];
+        airportSet.insert(airport);
+        citiesDest.insert(airport->getCity());
+        countriesDest.insert(airport->getCountry());
+    }
+
+    cout << "--------------------------------------------------" << endl;
+    cout << "From " << capitalizeWords((*it).second->getCity()) << " (" << sourceAirportCode << ")" << " you can reach:" << endl;
+    cout << "     - " << res.size() - 1 << " airports;" << endl;
+    cout << "     - " << citiesDest.size() << " cities;" << endl;
+    cout << "     - " << countriesDest.size() << " countries." << endl;
+
+    printDestinationsPrintOption(flightManagement, airportSet, citiesDest, countriesDest);
+}
 void printStatisticWithStops(const FlightManagement& flightManagement) {
     unordered_map<string, Airport*> allAirports = flightManagement.getAirportMap();
 
@@ -929,40 +964,9 @@ void printStatisticWithStops(const FlightManagement& flightManagement) {
     cout << "     - " << reachable.size() - 1 << " airports;" << endl;
     cout << "     - " << citiesDest.size() << " cities;" << endl;
     cout << "     - " << countriesDest.size() << " countries." << endl;
-    cout << "--------------------------------------------------" << endl;
-    cout << "Do you want to consult any of the results?" << endl;
-    cout << "1. Only airports" << endl;
-    cout << "2. Only cities" << endl;
-    cout << "3. Only countries" << endl;
-    cout << "4. Countries, cities and airports" << endl;
-    cout << "0. None of them" << endl;
-    cout << "--------------------------------------------------" << endl;
-    cout << "Option:";
-    char option = '0';
-    cin >> option;
-    switch (option) {
-        case '0':
-            return;
-        case '1':
-            printAirport(airportSet, false);
-            break;
-        case '2':
-            printList(citiesDest, true);
-            break;
-        case '3':
-            printList(countriesDest, false);
-            break;
-        case '4':
-            printAirport(airportSet, true);
-            break;
-        default:
-            cout << "--------------------------------------------------" << endl;
-            cout << "Invalid option! Please, try again." << endl;
-            return;
-    }
 
+    printDestinationsPrintOption(flightManagement, airportSet, citiesDest, countriesDest);
 }
-
 
 int maxPathDistance(const FlightManagement& flightManagement, const string& sourceAirportCode) {
     Graph<string> graph = flightManagement.getGraph();
@@ -1034,7 +1038,6 @@ void printMaximumTrip(const FlightManagement& flightManagement){
         }
     }
 }
-
 
 void printAirportsGreatestCapability(const FlightManagement& flightManagement){
     cout << "--------------------------------------------------\n";
@@ -1308,11 +1311,30 @@ int multiCityChoice(const unordered_map<string, vector<string>>& options, const 
     return op;
 }
 
-void printAirport(const set<Airport *, airportComparator>& set, bool b) {
+void printAirport(const FlightManagement& flightManagement, set<Airport *, airportComparator> printSet, bool b, bool reachable) {
+    if (!reachable) {
+        unordered_map<string, Airport*> allAirports = flightManagement.getAirportMap();
+        set<Airport *, airportComparator> finalSet;
+        for (pair<string, Airport*> airport : allAirports) {
+            if (b) {
+                auto it = printSet.find(airport.second);
+                if (it == printSet.end()) {
+                    finalSet.insert(airport.second);
+                }
+            } else {
+                auto it = printSet.find(airport.second);
+                if (it == printSet.end()) {
+                    finalSet.insert(airport.second);
+                }
+            }
+        }
+        printSet = finalSet;
+    }
+
     cout << "--------------------------------------------------" << endl;
     if (b) {
         cout << "CODE   COUNTRY                     CITY                      NAME" << endl;
-        for (Airport* airport : set) {
+        for (Airport* airport : printSet) {
 
             string countryName = capitalizeWords(airport->getCountry());
             if (countryName.length() > 27) {
@@ -1331,20 +1353,39 @@ void printAirport(const set<Airport *, airportComparator>& set, bool b) {
         }
     } else {
         cout << "CODE   NAME" << endl;
-        for (Airport *airport: set) {
+        for (Airport *airport: printSet) {
             cout << left << setw(6) << airport->getCode() << " ";
             cout << left << setw(35) << airport->getName() << "\n";
         }
     }
 }
-void printList(const set<string>& set, bool b) {
+void printList(const FlightManagement& flightManagement, set<string> printSet, bool b, bool reachable) {
+    if (!reachable) {
+        unordered_map<string, Airport*> allAirports = flightManagement.getAirportMap();
+        set<string> finalSet;
+        for (pair<string, Airport*> airport : allAirports) {
+            if (b) {
+                auto it = printSet.find(airport.second->getCity());
+                if (it == printSet.end()) {
+                    finalSet.insert(airport.second->getCity());
+                }
+            } else {
+                auto it = printSet.find(airport.second->getCountry());
+                if (it == printSet.end()) {
+                    finalSet.insert(airport.second->getCountry());
+                }
+            }
+        }
+        printSet = finalSet;
+    }
+
     cout << "--------------------------------------------------" << endl;
     if (b) {
         cout << "CITY" << endl;
     } else {
         cout << "COUNTRY" << endl;
     }
-    for (const string& str : set) {
+    for (const string& str : printSet) {
         cout << capitalizeWords(str) << "\n";
     }
 }
