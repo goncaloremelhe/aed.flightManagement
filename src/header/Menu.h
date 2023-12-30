@@ -18,7 +18,8 @@ void printDestinationsPrintOption(const FlightManagement& flightManagement, cons
 
 void printBestFlight(const FlightManagement& flightManagement);
 void includeConstraint(const FlightManagement& flightManagement, unordered_set<string>& exclude, int mode);
-list<string> shortestPath(const Graph<string>& graph, const string& source, const string& dest, const unordered_set<string>& excludeAirline, const unordered_set<string>& excludeLocation);
+void allPaths(Vertex<string>* start, Vertex<string>* end, const unordered_set<string>& excludeAirline, list<string>& path, int distance, set<list<string>>& paths);
+set<list<string>> findFlight(const FlightManagement& flightManagement, const unordered_set<string>& sourceLocation, const unordered_set<string>& destLocation, const unordered_set<string>& excludeLocation, const unordered_set<string>& excludeAirline);
 
 void printGlobalStatistics(const FlightManagement& flightManagement);
 
@@ -48,8 +49,6 @@ int multiCityChoice(const unordered_map<string, vector<string>>& options, const 
 void printAirport(const FlightManagement& flightManagement, set<Airport *, airportComparator> set, bool b, bool reachable);
 void printList(const FlightManagement& flightManagement, set<string> set, bool b, bool reachable);
 
-void includeConstraint(const FlightManagement& flightManagement, unordered_set<string>& exclude, int mode);
-vector<list<string>> findFlight(const FlightManagement& flightManagement, const unordered_set<string>& sourceLocation, const unordered_set<string>& destLocation, const unordered_set<string>& excludeLocation, const unordered_set<string>& excludeAirline);
 double haversineDistance(double latA, double lonA, double latB, double lonB);
 bool isFloat(const string& str);
 bool isNumber(const string& str);
