@@ -41,7 +41,7 @@ unordered_set<string> findAirport(const FlightManagement& flightManagement);
 unordered_set<string> findAirportInCity(const FlightManagement& flightManagement);
 int multiCityChoice(const unordered_map<string, vector<string>>& options, const string& city);
 void includeConstraint(const FlightManagement& flightManagement, unordered_set<string>& exclude, int mode);
-vector<pair<list<string>, unordered_set<string>>>  findFlight(const FlightManagement& flightManagement, const unordered_set<string>& sourceLocation, const unordered_set<string>& destLocation, const unordered_set<string>& excludeLocation, const unordered_set<string>& excludeAirline);
+vector<list<string>> findFlight(const FlightManagement& flightManagement, const unordered_set<string>& sourceLocation, const unordered_set<string>& destLocation, const unordered_set<string>& excludeLocation, const unordered_set<string>& excludeAirline);
 double haversineDistance(double latA, double lonA, double latB, double lonB);
 bool isFloat(const string& str);
 bool isNumber(const string& str);
