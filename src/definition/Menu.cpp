@@ -316,9 +316,8 @@ void printBestFlight(const FlightManagement& flightManagement) {
             advance(it, 1);
             airport = allAirports[*it];
             cout << airport->getCode() << ", " << capitalizeWords(airport->getCity()) << ", " << capitalizeWords(airport->getCountry());
-
-
             vector<string> air;
+
             for (const auto& airline : airlines) {
                 if (airline.getDest()->getInfo() == airport->getCode() and excludedAirline.find(airline.getAirline()) == excludedAirline.end())
                   air.push_back(airline.getAirline());
@@ -481,6 +480,29 @@ list<string> shortestPath(const Graph<string>& graph, const string& source, cons
     return path;
 }
 
+
+void allPaths(Vertex<string>* start, Vertex<string>* end, const unordered_set<string>& excludeAirline, list<string>& path, int distance, set<list<string>>& paths) {
+    path.push_back(start->getInfo());
+    start->setVisited(true);
+
+    if (start == end) {
+        paths.insert(path);
+    } else if (distance > 0){
+        for (const Edge<string>& edge : start->getAdj()) {
+            Vertex<string>* neighbor = edge.getDest();
+
+            if (excludeAirline.find(edge.getAirline()) != excludeAirline.end() || neighbor->isVisited()) {
+                continue;
+            }
+
+            allPaths(neighbor, end, excludeAirline, path, distance - 1, paths);
+        }
+    }
+
+    path.pop_back();
+    start->setVisited(false);
+}
+
 vector<list<string>> findFlight(const FlightManagement& flightManagement, const unordered_set<string>& sourceLocation, const unordered_set<string>& destLocation, const unordered_set<string>& excludeLocation, const unordered_set<string>& excludeAirline) {
     Graph<string> graph = flightManagement.getGraph();
     int minDis = INT_MAX;
@@ -524,17 +546,33 @@ vector<list<string>> findFlight(const FlightManagement& flightManagement, const 
     }
 
 
-    vector<list<string>> res;
+    vector<list<string>>> res;
+    set<list<string>> paths;
     for (const string& source : sourceLocation) {
         for (const string& dest : destLocation) {
 
-            list<string> path = shortestPath(graph, source, dest, excludeAirline, excludeLocation);
+            Vertex<string>* start = graph.findVertex(source);
+            Vertex<string>* end = graph.findVertex(dest);
 
-            if (path.size() - 1 == minDis) {
-                res.push_back(path);
+            for (Vertex<string>* vertex : graph.getVertexSet()) {
+                if (excludeLocation.find(vertex->getInfo()) != excludeLocation.end()) {
+                    vertex->setVisited(true);
+                } else {
+                    vertex->setVisited(false);
+                }
             }
+
+            list<string> path;
+            //list<string> path = shortestPath(graph, source, dest, excludeAirline, excludeLocation, currentAirlines);
+            allPaths(start, end, excludeAirline, path, minDis, paths);
+
         }
     }
+
+    for (const auto& pathSemi : paths) {
+        res.push_back(pathSemi);
+    }
+
     return res;
 }
 
