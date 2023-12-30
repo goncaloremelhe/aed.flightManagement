@@ -31,7 +31,7 @@ void Airline::incrementFlights() {
     flights += 1;
 }
 
-int Airline::getFlights() {
+int Airline::getFlights() const {
     return flights;
 }
 

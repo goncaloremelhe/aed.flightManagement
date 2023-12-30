@@ -52,7 +52,7 @@ void printList(const FlightManagement& flightManagement, set<string> set, bool b
 double haversineDistance(double latA, double lonA, double latB, double lonB);
 bool isFloat(const string& str);
 bool isNumber(const string& str);
-string upperCase(const string& str);
 string capitalizeWords(const string& str);
+string upperCase(const string& str);
 
 #endif //FLIGHTMANAGEMENT_MENU_H

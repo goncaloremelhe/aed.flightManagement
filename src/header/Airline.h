@@ -14,7 +14,7 @@ public:
     string getName();
     string getCallSign();
     string getCountry();
-    int getFlights();
+    int getFlights() const;
 };
 
 #endif //FLIGHTMANAGEMENT_AIRLINE_H

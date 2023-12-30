@@ -8,7 +8,7 @@
 
 using namespace std;
 
-string upperCase(const string str) {
+string upperCase(const std::string &str) {
     string s;
     for (char c : str) {
         s += toupper(c);

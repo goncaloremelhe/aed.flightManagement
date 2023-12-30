@@ -301,58 +301,56 @@ void printBestFlight(const FlightManagement& flightManagement) {
     if (res.empty()) {
         cout << "It was not possible to find a trip meeting those criteria! Please, try again." << endl << endl;
     }
-
     for (const list<string>& path : res) {
 
         auto it = path.begin();
         Airport* airport = allAirports[*it];
         vector<vector<string>> minimize;
+        unordered_map<string, int> airlineFrequency;
 
         for (int i = 0; i < path.size() - 1; i++) {
             Vertex<string>* vertex = graph.findVertex(*it);
-            vector<Edge<string>> airlines = vertex->getAdj();
 
             cout << airport->getCode() << ", " << capitalizeWords(airport->getCity()) << ", " << capitalizeWords(airport->getCountry()) << " to ";
             advance(it, 1);
             airport = allAirports[*it];
             cout << airport->getCode() << ", " << capitalizeWords(airport->getCity()) << ", " << capitalizeWords(airport->getCountry());
-            vector<string> air;
 
-            for (const auto& airline : airlines) {
-                if (airline.getDest()->getInfo() == airport->getCode() and excludedAirline.find(airline.getAirline()) == excludedAirline.end())
-                  air.push_back(airline.getAirline());
+            vector<string> air;
+            for (const auto& airline : vertex->getAdj()) {
+                if (airline.getDest()->getInfo() == airport->getCode() and excludedAirline.find(airline.getAirline()) == excludedAirline.end()) {
+                    air.push_back(airline.getAirline());
+                    if (least) {
+                        ++airlineFrequency[airline.getAirline()];
+                    }
+                }
             }
             minimize.push_back(air);
             cout << endl;
         }
 
         if (least) {
-            unordered_set<string> uniqueStrings;
-            for (auto &element : minimize) {
-                for (const string &airline : element) {
-                    if (uniqueStrings.find(airline) == uniqueStrings.end()) {
-                        uniqueStrings.insert(airline);
-                    } else {
-                        int count = 0;
-                        for (auto &otherVec : minimize) {
-                            for (const string &letsmin: otherVec) {
-                                if (letsmin == airline) {
-                                   vector<string> temp;
-                                   temp.push_back(airline);
-                                   minimize[count] = temp;
-                                }
-                            }
-                            count++;
-                        }
+            vector<vector<string>> minimizedAirlines;
+            for (const vector<string>& flightAirlines : minimize) {
+                vector<string> commonAirlines;
+                for (const string& airline : flightAirlines) {
+                    if (airlineFrequency[airline] == path.size() - 1) {
+                        commonAirlines.push_back(airline);
                     }
                 }
+                if (commonAirlines.empty()) {
+                    minimizedAirlines.push_back(flightAirlines);
+                } else {
+                    minimizedAirlines.push_back(commonAirlines);
+                }
             }
+            minimize = minimizedAirlines;
         }
 
         cout << "--------------------------------------------------" << endl;
         for (int i = 0; i < minimize.size(); i++){
             cout << "Airline(s) for the " << i+1 << " flight : ";
-            for (auto airline : minimize[i]){
+            for (const auto& airline : minimize[i]){
                 cout << airline << " ";
             }
             cout << endl;
@@ -487,7 +485,7 @@ set<list<string>> findFlight(const FlightManagement& flightManagement, const uno
         }
     }
 
-
+    cout << minDis << endl;
     set<list<string>> paths;
     for (const string& source : sourceLocation) {
         for (const string& dest : destLocation) {
@@ -511,8 +509,6 @@ set<list<string>> findFlight(const FlightManagement& flightManagement, const uno
 
     return paths;
 }
-
-
 
 
 void printGlobalStatistics(const FlightManagement& flightManagement){
@@ -1396,13 +1392,6 @@ double haversineDistance(double latA, double lonA, double latB, double lonB) {
     double rad = 6365;
     double c = 2 * asin(sqrt(a));
     return rad * c;
-}
-string upperCase(const string& str) {
-    string s;
-    for (char c : str) {
-        s += toupper(c);
-    }
-    return s;
 }
 string capitalizeWords(const string& str) {
     string result = str;
