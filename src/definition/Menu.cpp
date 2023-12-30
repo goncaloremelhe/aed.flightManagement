@@ -277,7 +277,7 @@ void printBestFlight(const FlightManagement& flightManagement) {
                 least = !least;
                 break;
             case '6':
-                res = findFlight(flightManagement, sourceLocation, destLocation, excludedLocation, excludedAirline, least);
+                res = findFlight(flightManagement, sourceLocation, destLocation, excludedLocation, excludedAirline);
                 flag = false;
                 break;
             default:
@@ -458,7 +458,7 @@ list<string> shortestPath(const Graph<string>& graph, const string& source, cons
     return path;
 }
 
-vector<pair<list<string>, unordered_set<string>>>  findFlight(const FlightManagement& flightManagement, const unordered_set<string>& sourceLocation, const unordered_set<string>& destLocation, const unordered_set<string>& excludeLocation, const unordered_set<string>& excludeAirline, bool least) {
+vector<pair<list<string>, unordered_set<string>>>  findFlight(const FlightManagement& flightManagement, const unordered_set<string>& sourceLocation, const unordered_set<string>& destLocation, const unordered_set<string>& excludeLocation, const unordered_set<string>& excludeAirline) {
     Graph<string> graph = flightManagement.getGraph();
     int minDis = INT_MAX;
     for (const string& source : sourceLocation) {
