@@ -69,7 +69,7 @@ void printStatisticsMenu(const FlightManagement& flightManagement){
             return;
         default:
             cout << "--------------------------------------------------\n";
-            cout << "Invalid option. Exiting." << endl;
+            cout << "Invalid option. Exiting..." << endl;
             break;
     }
 
@@ -97,7 +97,7 @@ void printNumberFlightsMenu(const FlightManagement& flightManagement){
             break;
         case '0':
             cout << "--------------------------------------------------\n";
-            cout << "Returning to the main menu." << endl;
+            cout << "Returning to the main menu..." << endl;
             return;
         default:
             cout << "--------------------------------------------------\n";
@@ -125,11 +125,11 @@ void printDestinationOptionMenu(const FlightManagement& flightManagement) {
             break;
         case '0':
             cout << "--------------------------------------------------\n";
-            cout << "Returning to the main menu." << endl;
+            cout << "Returning to the main menu..." << endl;
             return;
         default:
             cout << "--------------------------------------------------\n";
-            cout << "Invalid option. Exiting." << endl;
+            cout << "Invalid option. Exiting..." << endl;
             break;
     }
 }
@@ -156,7 +156,7 @@ void printLayoverMenu(const FlightManagement& flightManagement) {
             break;
         case '0':
             cout << "--------------------------------------------------\n";
-            cout << "Returning to the main menu." << endl;
+            cout << "Returning to the main menu..." << endl;
             return;
         default:
             cout << "--------------------------------------------------\n";
@@ -176,6 +176,7 @@ void printBestFlight(const FlightManagement& flightManagement) {
     cout << "1 - Airport" << endl;
     cout << "2 - City" << endl;
     cout << "3 - Coordinates with range" << endl;
+    cout << "4 - Nearest airport with coordinates" << endl;
     cout << "0 - Exit" << endl;
     cout << "--------------------------------------------------\n";
     cout << "Option:";
@@ -195,11 +196,14 @@ void printBestFlight(const FlightManagement& flightManagement) {
                 return;
             }
             break;
+        case '4':
+            sourceLocation = findNearestAirport(flightManagement);
+            break;
         case '0':
-            cout << "Returning to the main menu." << endl;
+            cout << "Returning to the main menu..." << endl;
             return;
         default:
-            cout << "Invalid option. Exiting." << endl;
+            cout << "Invalid option. Exiting..." << endl;
             return;
     }
     if (sourceLocation.empty()) {
@@ -212,6 +216,7 @@ void printBestFlight(const FlightManagement& flightManagement) {
     cout << "1 - Airport" << endl;
     cout << "2 - City" << endl;
     cout << "3 - Coordinates with range" << endl;
+    cout << "4 - Nearest airport with coordinates" << endl;
     cout << "0 - Exit" << endl;
     cout << "--------------------------------------------------\n";
     cout << "Option:";
@@ -231,11 +236,14 @@ void printBestFlight(const FlightManagement& flightManagement) {
                 return;
             }
             break;
+        case '4':
+            destLocation = findNearestAirport(flightManagement);
+            break;
         case '0':
-            cout << "Returning to the main menu." << endl;
+            cout << "Returning to the main menu..." << endl;
             return;
         default:
-            cout << "Invalid option. Exiting." << endl;
+            cout << "Invalid option. Exiting..." << endl;
             return;
     }
     if (destLocation.empty()) {
@@ -290,7 +298,7 @@ void printBestFlight(const FlightManagement& flightManagement) {
                 return;
             case '0':
                 cout << "--------------------------------------------------\n";
-                cout << "Returning to main menu." << endl;
+                cout << "Returning to main menu..." << endl;
                 return;
         }
     }
@@ -442,6 +450,58 @@ void allPaths(Vertex<string>* start, Vertex<string>* end, const unordered_set<st
     path.pop_back();
     start->setVisited(false);
 }
+list<string> shortestPath(const Graph<string>& graph, Vertex<string>* sourceVertex, Vertex<string>* destVertex, const unordered_set<string>& excludeAirline) {
+    list<string> path;
+
+    if (sourceVertex->isVisited() or destVertex->isVisited()) {
+        return path;
+    }
+
+    queue<string> q;
+    q.push(sourceVertex->getInfo());
+    sourceVertex->setVisited(true);
+    sourceVertex->setDistance(0);
+
+    while (!q.empty()) {
+        Vertex<string>* tempVertex = graph.findVertex(q.front());
+        q.pop();
+
+
+        for (const Edge<string>& edge : tempVertex->getAdj()) {
+            Vertex<string>* neighbour = edge.getDest();
+
+            if (excludeAirline.find(edge.getAirline()) != excludeAirline.end()) {
+                continue;
+            }
+
+            if (!neighbour->isVisited()) {
+                neighbour->setVisited(true);
+                q.push(neighbour->getInfo());
+                neighbour->setDistance(tempVertex->getDistance() + 1);
+                neighbour->setLastVisit(tempVertex->getInfo());
+
+            }
+
+            if (neighbour == destVertex) {
+                break;
+            }
+
+        }
+
+    }
+
+    if (!destVertex->isVisited()) {
+        return path;
+    }
+
+    while (destVertex != sourceVertex) {
+        path.push_front(destVertex->getInfo());
+        destVertex = graph.findVertex(destVertex->getLastVisit());
+    }
+    path.push_front(sourceVertex->getInfo());
+    return path;
+}
+
 
 set<list<string>> findFlight(const FlightManagement& flightManagement, const unordered_set<string>& sourceLocation, const unordered_set<string>& destLocation, const unordered_set<string>& excludeLocation, const unordered_set<string>& excludeAirline) {
     Graph<string> graph = flightManagement.getGraph();
@@ -485,11 +545,12 @@ set<list<string>> findFlight(const FlightManagement& flightManagement, const uno
         }
     }
 
-    cout << minDis << endl;
     set<list<string>> paths;
     for (const string& source : sourceLocation) {
         for (const string& dest : destLocation) {
-
+            if (source == dest) {
+                continue;
+            }
             Vertex<string>* start = graph.findVertex(source);
             Vertex<string>* end = graph.findVertex(dest);
 
@@ -502,8 +563,11 @@ set<list<string>> findFlight(const FlightManagement& flightManagement, const uno
             }
 
             list<string> path;
-            allPaths(start, end, excludeAirline, path, minDis, paths);
-
+            if (minDis <= 3) {
+                allPaths(start, end, excludeAirline, path, minDis, paths);
+            } else {
+                paths.insert(shortestPath(graph, start,end,excludeAirline));
+            }
         }
     }
 
@@ -919,6 +983,7 @@ void printStatisticWithStops(const FlightManagement& flightManagement) {
     unordered_map<string, Airport *>::iterator it;
     it = allAirports.find(sourceAirportCode);
     if (it == allAirports.end()) {
+        cout << "--------------------------------------------------\n";
         cout << "Airport not found! Please, try again." << endl;
         return;
     }
@@ -951,8 +1016,8 @@ void printStatisticWithStops(const FlightManagement& flightManagement) {
 
 
     cout << "--------------------------------------------------" << endl;
-    cout << "From " << sourceAirportCode << " (" << capitalizeWords((*it).second->getCity()) << ")" << ", with " << maxStops << " layovers, you can reach:" << endl;
-    cout << "     - " << reachable.size() - 1 << " airports;" << endl;
+    cout << "From " << sourceAirportCode << " (" << capitalizeWords((*it).second->getCity()) << ")" << ", with " << maxStops - 1 << " layovers, you can reach:" << endl;
+    cout << "     - " << reachable.size() << " airports;" << endl;
     cout << "     - " << citiesDest.size() << " cities;" << endl;
     cout << "     - " << countriesDest.size() << " countries." << endl;
 
@@ -1184,7 +1249,64 @@ void dfs_art(const Graph<string>& g, Vertex<string> *v, unordered_set<string> &l
     }
 }
 
+unordered_set<string> findNearestAirport(const FlightManagement& flightManagement) {
+    unordered_set<string> source;
+    cout << "--------------------------------------------------\n";
+    cout << "Enter the approximated latitude:";
+    string latitude;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    getline(cin, latitude);
 
+    if (!isFloat(latitude)) {
+        cout << "--------------------------------------------------\n";
+        cout << "The input value was not valid! Please, try again." << endl;
+        return source;
+    }
+
+    cout << "Enter the approximated longitude:";
+    string longitude;
+    getline(cin, longitude);
+
+    if (!isFloat(longitude)) {
+        cout << "--------------------------------------------------\n";
+        cout << "The input value was not valid! Please, try again." << endl;
+        return source;
+    }
+
+    double minDis = INT_MAX;
+
+    unordered_map<string, Airport*> airportMap = flightManagement.getAirportMap();
+    Graph<string> graph = flightManagement.getGraph();
+
+    for (Vertex<string>* vertex : graph.getVertexSet()) {
+        Airport* airport = airportMap[vertex->getInfo()];
+        double distance = haversineDistance(stod(latitude), stod(longitude), airport->getLatitude(), airport->getLongitude());
+        if (distance <= minDis) {
+            minDis = distance;
+        }
+    }
+
+    for (Vertex<string>* vertex : graph.getVertexSet()) {
+        Airport* airport = airportMap[vertex->getInfo()];
+        double distance = haversineDistance(stod(latitude), stod(longitude), airport->getLatitude(), airport->getLongitude());
+        if (distance == minDis) {
+            source.insert(vertex->getInfo());
+        }
+    }
+
+    cout << "--------------------------------------------------" << endl;
+    if (source.size() == 1) {
+        auto it = source.begin();
+        cout << "The nearest airport from is " << *it << " from " << airportMap[*it]->getCountry() << "!" << endl;
+        cout << "Lat: " << airportMap[*it]->getLatitude() << " Lon:" << airportMap[*it]->getLongitude() << endl;
+    } else {
+        cout << "There are " << source.size() << " airports at the same distance from the coordinates you gave:" << endl;
+        for (const string& str : source) {
+            cout << "     - " << str << " from " << airportMap[str] << ": Lat: " << airportMap[str]->getLatitude() << " Lon: " << airportMap[str]->getLongitude() << endl;
+        }
+    }
+    return source;
+}
 unordered_set<string> findAirportHaversine(const FlightManagement& flightManagement) {
     unordered_set<string> source;
     cout << "--------------------------------------------------\n";
@@ -1384,6 +1506,9 @@ void printList(const FlightManagement& flightManagement, set<string> printSet, b
 double haversineDistance(double latA, double lonA, double latB, double lonB) {
     latA = (latA) * M_PI / 180.0;
     latB = (latB) * M_PI / 180.0;
+
+    lonA = (lonA) * M_PI / 180.0;
+    lonB = (lonB) * M_PI / 180.0;
 
     double vlat = latB - latA;
     double vlon = lonB - lonA;

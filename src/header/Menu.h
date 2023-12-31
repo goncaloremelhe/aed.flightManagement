@@ -41,6 +41,7 @@ void printAirportsGreatestCapability(const FlightManagement& flightManagement);
 void printEssentialAirports(const FlightManagement& flightManagement);
 void dfs_art(const Graph<string>& g, Vertex<string> *v, unordered_set<string> &l, int &i);
 
+unordered_set<string> findNearestAirport(const FlightManagement& flightManagement);
 unordered_set<string> findAirportHaversine(const FlightManagement& flightManagement);
 unordered_set<string> findAirport(const FlightManagement& flightManagement);
 unordered_set<string> findAirportInCity(const FlightManagement& flightManagement);

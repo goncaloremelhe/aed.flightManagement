@@ -24,6 +24,7 @@ int main() {
                 flag = false;
                 break;
             default:
+                cout << "--------------------------------------------------\n";
                 cout << "Invalid option. Exiting." << endl;
                 break;
         }
