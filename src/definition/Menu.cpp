@@ -1000,7 +1000,7 @@ void printStatisticWithStops(const FlightManagement& flightManagement) {
     }
     int maxStops = stoi(maxStops_);
 
-    vector<string> reachable = flightManagement.getGraph().bfsDis(sourceAirportCode, maxStops, true);
+    vector<string> reachable = flightManagement.getGraph().bfsDis(sourceAirportCode, maxStops+1, true);
 
 
     set<string> citiesDest;
@@ -1016,7 +1016,7 @@ void printStatisticWithStops(const FlightManagement& flightManagement) {
 
 
     cout << "--------------------------------------------------" << endl;
-    cout << "From " << sourceAirportCode << " (" << capitalizeWords((*it).second->getCity()) << ")" << ", with " << maxStops - 1 << " layovers, you can reach:" << endl;
+    cout << "From " << sourceAirportCode << " (" << capitalizeWords((*it).second->getCity()) << ")" << ", with " << maxStops<< " layovers, you can reach:" << endl;
     cout << "     - " << reachable.size() << " airports;" << endl;
     cout << "     - " << citiesDest.size() << " cities;" << endl;
     cout << "     - " << countriesDest.size() << " countries." << endl;
