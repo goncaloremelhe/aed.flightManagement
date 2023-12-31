@@ -314,7 +314,7 @@ void printBestFlight(const FlightManagement& flightManagement) {
         auto it = path.begin();
         Airport* airport = allAirports[*it];
         vector<vector<string>> minimize;
-        unordered_map<string, int> airlineFrequency;
+        //unordered_map<string, int> airlineFrequency;
 
         for (int i = 0; i < path.size() - 1; i++) {
             Vertex<string>* vertex = graph.findVertex(*it);
@@ -328,9 +328,11 @@ void printBestFlight(const FlightManagement& flightManagement) {
             for (const auto& airline : vertex->getAdj()) {
                 if (airline.getDest()->getInfo() == airport->getCode() and excludedAirline.find(airline.getAirline()) == excludedAirline.end()) {
                     air.push_back(airline.getAirline());
+                    /*
                     if (least) {
                         ++airlineFrequency[airline.getAirline()];
                     }
+                     */
                 }
             }
             minimize.push_back(air);
@@ -338,20 +340,32 @@ void printBestFlight(const FlightManagement& flightManagement) {
         }
 
         if (least) {
+
             vector<vector<string>> minimizedAirlines;
-            for (const vector<string>& flightAirlines : minimize) {
+            minimizedAirlines.reserve(minimize.size());
+
+            vector<string> currentMinimized = minimize[0];
+
+            for (int i = 0; i < minimize.size() - 1; ++i) {
+                unordered_set<string> currentFlight(minimize.at(i).begin(), minimize.at(i).end());
+                unordered_set<string> nextFlight(minimize.at(i+1).begin(), minimize.at(i+1).end());
                 vector<string> commonAirlines;
-                for (const string& airline : flightAirlines) {
-                    if (airlineFrequency[airline] == path.size() - 1) {
+
+                for (const auto &airline: currentFlight) {
+                    if (nextFlight.find(airline) != nextFlight.end()) {
                         commonAirlines.push_back(airline);
                     }
                 }
-                if (commonAirlines.empty()) {
-                    minimizedAirlines.push_back(flightAirlines);
-                } else {
+
+                if (!commonAirlines.empty()) {
                     minimizedAirlines.push_back(commonAirlines);
+                    currentMinimized = commonAirlines;
+                } else {
+                    minimizedAirlines.push_back(currentMinimized);
+                    currentMinimized = minimize.at(i+1);
                 }
             }
+            minimizedAirlines.push_back(currentMinimized);
             minimize = minimizedAirlines;
         }
 
