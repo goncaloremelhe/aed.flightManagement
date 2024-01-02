@@ -19,8 +19,16 @@ void printDestinationsPrintOption(const FlightManagement& flightManagement, cons
 void printBestFlight(const FlightManagement& flightManagement);
 void includeConstraint(const FlightManagement& flightManagement, unordered_set<string>& exclude, int mode);
 list<list<string>> constructFlights(const string& dest, const unordered_map<string, pair<list<string>, int>>& path);
+/**
+* @brief Finds flight paths with the given exclusions
+* @complexity O(n)
+*/
 set<list<string>> findFlight(const FlightManagement& flightManagement, const unordered_set<string>& sourceLocation, const unordered_set<string>& destLocation, const unordered_set<string>& excludeLocation, const unordered_set<string>& excludeAirline);
 
+/**
+* @brief Prints the total number of airports, flights, airlines, reachable cities and reachable countries
+* @complexity O(n)
+*/
 void printGlobalStatistics(const FlightManagement& flightManagement);
 
 /**
@@ -107,7 +115,7 @@ unordered_set<string> findAirport(const FlightManagement& flightManagement);
 unordered_set<string> findAirportInCity(const FlightManagement& flightManagement);
 /**
 * @brief Prompts the user to choose the country if the same city name exists in multiple countries
-* @complexity O(?????????)
+* @complexity O(n)
 */
 int multiCityChoice(const unordered_map<string, vector<string>>& options, const string& city);
 

@@ -170,6 +170,7 @@ void printBestFlight(const FlightManagement& flightManagement) {
     char option = '0';
     unordered_set<string> sourceLocation;
     unordered_set<string> destLocation;
+    unordered_map<string, Airport*> allAirports = flightManagement.getAirportMap();
 
     cout << "--------------------------------------------------\n";
     cout << "Choose your source location:" << endl;
@@ -194,15 +195,27 @@ void printBestFlight(const FlightManagement& flightManagement) {
                 cout << "--------------------------------------------------\n";
                 cout << "There's no airport inside the range you asked! Please, try again." << endl;
                 return;
+            } else {
+                cout << "--------------------------------------------------\n";
+                if (sourceLocation.size() == 1) {
+                    cout << "This airport was found inside the range you asked:" << endl;
+                } else {
+                    cout << "These airports were found inside the range you asked:" << endl;
+                }
+                for (const string& airport : sourceLocation) {
+                    cout << "     - " << airport << " from " << allAirports[airport]->getCountry() << ";" << endl;
+                }
             }
             break;
         case '4':
             sourceLocation = findNearestAirport(flightManagement);
             break;
         case '0':
+            cout << "--------------------------------------------------\n";
             cout << "Returning to the main menu..." << endl;
             return;
         default:
+            cout << "--------------------------------------------------\n";
             cout << "Invalid option. Exiting..." << endl;
             return;
     }
@@ -234,15 +247,27 @@ void printBestFlight(const FlightManagement& flightManagement) {
                 cout << "--------------------------------------------------\n";
                 cout << "There's no airport inside the range you asked! Please, try again." << endl;
                 return;
+            } else {
+                cout << "--------------------------------------------------\n";
+                if (sourceLocation.size() == 1) {
+                    cout << "This airport was found inside the range you asked:" << endl;
+                } else {
+                    cout << "These airports were found inside the range you asked:" << endl;
+                }
+                for (const string& airport : sourceLocation) {
+                    cout << "     - " << airport << " from " << allAirports[airport]->getCountry() << ";" << endl;
+                }
             }
             break;
         case '4':
             destLocation = findNearestAirport(flightManagement);
             break;
         case '0':
+            cout << "--------------------------------------------------\n";
             cout << "Returning to the main menu..." << endl;
             return;
         default:
+            cout << "--------------------------------------------------\n";
             cout << "Invalid option. Exiting..." << endl;
             return;
     }
@@ -302,7 +327,6 @@ void printBestFlight(const FlightManagement& flightManagement) {
                 return;
         }
     }
-    unordered_map<string, Airport*> allAirports = flightManagement.getAirportMap();
     Graph<string> graph = flightManagement.getGraph();
 
     cout << "--------------------------------------------------\n\n";
@@ -442,7 +466,6 @@ list<list<string>> constructFlights(const string& dest, const unordered_map<stri
     list<string> airportList = path.at(dest).first;
 
     if (airportList.empty()){
-        cout << dest << endl;
         flights.push_back(list<string>{dest});
     } else {
         for (const string& source : path.at(dest).first) {
