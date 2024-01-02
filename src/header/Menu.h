@@ -21,66 +21,66 @@ void includeConstraint(const FlightManagement& flightManagement, unordered_set<s
 list<list<string>> constructFlights(const string& dest, const unordered_map<string, pair<list<string>, int>>& path);
 /**
 * @brief Finds flight paths with the given exclusions
-* @complexity O(n)
+* @complexity O(V*(V+E))
 */
 set<list<string>> findFlight(const FlightManagement& flightManagement, const unordered_set<string>& sourceLocation, const unordered_set<string>& destLocation, const unordered_set<string>& excludeLocation, const unordered_set<string>& excludeAirline);
 
 /**
 * @brief Prints the total number of airports, flights, airlines, reachable cities and reachable countries
-* @complexity O(n)
+* @complexity O(E)
 */
 void printGlobalStatistics(const FlightManagement& flightManagement);
 
 /**
 * @brief Prints the number of flights involving a chosen airport and from how many different airlines
-* @complexity O(n)
+* @complexity O(V)
 */
 void printNumFlights_outAirport(const FlightManagement& flightManagement);
 /**
 * @brief Prints the number of flights that involve a chosen city
-* @complexity O(n)
+* @complexity O(V)
 */
 void printNumFlights_perCity(const FlightManagement& flightManagement);
 /**
 * @brief Prints the number of flights operated by a chosen airline
-* @complexity O(n)
+* @complexity O(1)
 */
 void printNumFlights_perAirline(const FlightManagement& flightManagement);
 
 /**
 * @brief Prints the number of different countries that a given airport flies to
-* @complexity O(n)
+* @complexity O(V)
 */
 void printNumByAirport(const FlightManagement& flightManagement);
 /**
 * @brief Prints the number of different countries that a given city flies to
-* @complexity O(n)
+* @complexity O(V+E)
 */
 void printNumByCity(const FlightManagement& flightManagement);
 
 /**
 * @brief prints the number of reachable destinations from a given airport
-* @complexity O(n)
+* @complexity O(V+E)
 */
 void printMaximumDestinations(const FlightManagement& flightManagement);
 /**
 * @brief prints the number of reachable destinations from a given airport in a maximum number of lay-overs
-* @complexity O(n)
+* @complexity O(V+E)
 */
 void printStatisticWithStops(const FlightManagement& flightManagement);
 /**
 * @brief auxiliary function to calculate the  max number of trips possible from a given airport
-* @complexity O(n)
+* @complexity O(V+E)
 */
 int maxPathDistance(const FlightManagement& flightManagement, const string& sourceAirportCode);
 /**
 * @brief prints the flight trip(s) with the greatest number of stops between the source and destination
-* @complexity O(n*log(n))
+* @complexity O(V*(V+E))
 */
 void printMaximumTrip(const FlightManagement& flightManagement);
 /**
 * @brief prints a chosen number of airports sorted by greatest number of incoming flights, outgoing flights, or total flights
-* @complexity O(n*log(n))
+* @complexity O(V*log(V))
 */
 void printAirportsGreatestCapability(const FlightManagement& flightManagement);
 /**
@@ -95,27 +95,27 @@ void printEssentialAirports(const FlightManagement& flightManagement);
 void dfs_art(const Graph<string>& g, Vertex<string> *v, unordered_set<string> &l, int &i);
 /**
 * @brief Finds the nearest airport to the chosen location
-* @complexity O(n)
+* @complexity O(V)
 */
 unordered_set<string> findNearestAirport(const FlightManagement& flightManagement);
 /**
 * @brief Finds airports on a chosen radius in haversine distance
-* @complexity O(n)
+* @complexity O(V)
 */
 unordered_set<string> findAirportHaversine(const FlightManagement& flightManagement);
 /**
 * @brief Finds an airport based on airport code
-* @complexity O(n)
+* @complexity O(1)
 */
 unordered_set<string> findAirport(const FlightManagement& flightManagement);
 /**
 * @brief Finds an airport based on a chosen city
-* @complexity O(n)
+* @complexity O(V)
 */
 unordered_set<string> findAirportInCity(const FlightManagement& flightManagement);
 /**
 * @brief Prompts the user to choose the country if the same city name exists in multiple countries
-* @complexity O(n)
+* @complexity O(V)
 */
 int multiCityChoice(const unordered_map<string, vector<string>>& options, const string& city);
 
