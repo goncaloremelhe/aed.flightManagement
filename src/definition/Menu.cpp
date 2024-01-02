@@ -314,7 +314,6 @@ void printBestFlight(const FlightManagement& flightManagement) {
         auto it = path.begin();
         Airport* airport = allAirports[*it];
         vector<vector<string>> minimize;
-        //unordered_map<string, int> airlineFrequency;
 
         for (int i = 0; i < path.size() - 1; i++) {
             Vertex<string>* vertex = graph.findVertex(*it);
@@ -328,11 +327,6 @@ void printBestFlight(const FlightManagement& flightManagement) {
             for (const auto& airline : vertex->getAdj()) {
                 if (airline.getDest()->getInfo() == airport->getCode() and excludedAirline.find(airline.getAirline()) == excludedAirline.end()) {
                     air.push_back(airline.getAirline());
-                    /*
-                    if (least) {
-                        ++airlineFrequency[airline.getAirline()];
-                    }
-                     */
                 }
             }
             minimize.push_back(air);
@@ -443,79 +437,25 @@ void includeConstraint(const FlightManagement& flightManagement, unordered_set<s
     }
 }
 
-void allPaths(Vertex<string>* start, Vertex<string>* end, const unordered_set<string>& excludeAirline, list<string>& path, int distance, set<list<string>>& paths) {
-    path.push_back(start->getInfo());
-    start->setVisited(true);
+list<list<string>> constructFlights(const string& dest, const unordered_map<string, pair<list<string>, int>>& path) {
+    list<list<string>> flights;
+    list<string> airportList = path.at(dest).first;
 
-    if (start == end) {
-        paths.insert(path);
-    } else if (distance > 0){
-        for (const Edge<string>& edge : start->getAdj()) {
-            Vertex<string>* neighbor = edge.getDest();
+    if (airportList.empty()){
+        cout << dest << endl;
+        flights.push_back(list<string>{dest});
+    } else {
+        for (const string& source : path.at(dest).first) {
+            list<list<string>> subPaths = constructFlights(source, path);
 
-            if (excludeAirline.find(edge.getAirline()) != excludeAirline.end() || neighbor->isVisited()) {
-                continue;
+            for (list<string>& subPath : subPaths) {
+                subPath.push_back(dest);
+                flights.push_back(subPath);
             }
-
-            allPaths(neighbor, end, excludeAirline, path, distance - 1, paths);
         }
     }
-
-    path.pop_back();
-    start->setVisited(false);
+    return flights;
 }
-list<string> shortestPath(const Graph<string>& graph, Vertex<string>* sourceVertex, Vertex<string>* destVertex, const unordered_set<string>& excludeAirline) {
-    list<string> path;
-
-    if (sourceVertex->isVisited() or destVertex->isVisited()) {
-        return path;
-    }
-
-    queue<string> q;
-    q.push(sourceVertex->getInfo());
-    sourceVertex->setVisited(true);
-    sourceVertex->setDistance(0);
-
-    while (!q.empty()) {
-        Vertex<string>* tempVertex = graph.findVertex(q.front());
-        q.pop();
-
-
-        for (const Edge<string>& edge : tempVertex->getAdj()) {
-            Vertex<string>* neighbour = edge.getDest();
-
-            if (excludeAirline.find(edge.getAirline()) != excludeAirline.end()) {
-                continue;
-            }
-
-            if (!neighbour->isVisited()) {
-                neighbour->setVisited(true);
-                q.push(neighbour->getInfo());
-                neighbour->setDistance(tempVertex->getDistance() + 1);
-                neighbour->setLastVisit(tempVertex->getInfo());
-
-            }
-
-            if (neighbour == destVertex) {
-                break;
-            }
-
-        }
-
-    }
-
-    if (!destVertex->isVisited()) {
-        return path;
-    }
-
-    while (destVertex != sourceVertex) {
-        path.push_front(destVertex->getInfo());
-        destVertex = graph.findVertex(destVertex->getLastVisit());
-    }
-    path.push_front(sourceVertex->getInfo());
-    return path;
-}
-
 
 set<list<string>> findFlight(const FlightManagement& flightManagement, const unordered_set<string>& sourceLocation, const unordered_set<string>& destLocation, const unordered_set<string>& excludeLocation, const unordered_set<string>& excludeAirline) {
     Graph<string> graph = flightManagement.getGraph();
@@ -560,27 +500,67 @@ set<list<string>> findFlight(const FlightManagement& flightManagement, const uno
     }
 
     set<list<string>> paths;
-    for (const string& source : sourceLocation) {
-        for (const string& dest : destLocation) {
-            if (source == dest) {
+    for (const string &source : sourceLocation) {
+
+        for (auto *vertex : graph.getVertexSet()) {
+            vertex->setVisited(excludeLocation.count(vertex->getInfo()) > 0);
+        }
+
+        unordered_set<string> usedDest;
+        unordered_map<string, pair<list<string>, int>> path;
+
+        Vertex<string>* start = graph.findVertex(source);
+        if (start->isVisited()) {
+            continue;
+        }
+        start->setVisited(true);
+
+        queue<string> q;
+        q.push(source);
+
+        path[source] = make_pair(list<string>(), 0);
+
+        while (!q.empty()) {
+            string currentVertex = q.front();
+            int currentDistance = path[currentVertex].second;
+            q.pop();
+
+            if (currentDistance > minDis) {
                 continue;
             }
-            Vertex<string>* start = graph.findVertex(source);
-            Vertex<string>* end = graph.findVertex(dest);
 
-            for (Vertex<string>* vertex : graph.getVertexSet()) {
-                if (excludeLocation.find(vertex->getInfo()) != excludeLocation.end()) {
-                    vertex->setVisited(true);
-                } else {
-                    vertex->setVisited(false);
+            if (destLocation.find(currentVertex) != destLocation.end()) {
+                    usedDest.insert(currentVertex);
+            } else {
+                Vertex<string>* vertex = graph.findVertex(currentVertex);
+                for (const Edge<string>& edge : vertex->getAdj()) {
+
+                    if (excludeAirline.find(edge.getAirline()) != excludeAirline.end()) {
+                        continue;
+                    }
+
+                    Vertex<string>* neighbour = edge.getDest();
+                    int newDistance = currentDistance + 1;
+
+                    if (neighbour->isVisited()) {
+
+                        if (path[neighbour->getInfo()].second == newDistance) {
+                            path[neighbour->getInfo()].first.push_back(currentVertex);
+                        }
+
+                    } else {
+                        neighbour->setVisited(true);
+                        path[neighbour->getInfo()] = make_pair(list<string>({currentVertex}), newDistance);
+                        q.push(neighbour->getInfo());
+                    }
                 }
             }
+        }
 
-            list<string> path;
-            if (minDis <= 3) {
-                allPaths(start, end, excludeAirline, path, minDis, paths);
-            } else {
-                paths.insert(shortestPath(graph, start,end,excludeAirline));
+        for (const string& destArrived : usedDest){
+            list<list<string>> pathsOfDest = constructFlights(destArrived, path);
+            for (const list<string>& flight : pathsOfDest){
+                paths.insert(flight);
             }
         }
     }
@@ -696,7 +676,6 @@ void printNumFlights_perCity(const FlightManagement& flightManagement){
 
     unordered_set<string> uniqueAirlines;
 
-    //Depois confere quantos voos saem e chegam desses aeroportos
     for (const string& airportCode : airportsOfCity){
 
         Vertex<string>* vertex = graph.findVertex(airportCode);
@@ -1206,6 +1185,15 @@ void printAirportsGreatestCapability(const FlightManagement& flightManagement){
 
 void printEssentialAirports(const FlightManagement& flightManagement){
     Graph<string> graph = flightManagement.getGraph();
+
+    cout << "--------------------------------------------------\n";
+    cout << "Calculating all the essential airports..." << endl;
+    cout << "--------------------------------------------------\n";
+    for (Vertex<string>* vertex : graph.getVertexSet()) {
+        for (const Edge<string>& edge : vertex->getAdj()) {
+            graph.addEdge(edge.getDest()->getInfo(), vertex->getInfo(), 0, "");
+        }
+    }
     unordered_set<string> essentialAirports;
 
     int i = 0;
@@ -1406,8 +1394,8 @@ unordered_set<string> findAirportInCity(const FlightManagement& flightManagement
         int option = multiCityChoice(uniqueCountries, cityName);
         advance(it, option - 1);
         source = {};
-        for (const string& aeroporto : (*it).second) {
-            source.insert(aeroporto);
+        for (const string& airport : (*it).second) {
+            source.insert(airport);
         }
     }
 

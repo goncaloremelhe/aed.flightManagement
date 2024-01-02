@@ -18,7 +18,7 @@ void printDestinationsPrintOption(const FlightManagement& flightManagement, cons
 
 void printBestFlight(const FlightManagement& flightManagement);
 void includeConstraint(const FlightManagement& flightManagement, unordered_set<string>& exclude, int mode);
-void allPaths(Vertex<string>* start, Vertex<string>* end, const unordered_set<string>& excludeAirline, list<string>& path, int distance, set<list<string>>& paths);
+list<list<string>> constructFlights(const string& dest, const unordered_map<string, pair<list<string>, int>>& path);
 set<list<string>> findFlight(const FlightManagement& flightManagement, const unordered_set<string>& sourceLocation, const unordered_set<string>& destLocation, const unordered_set<string>& excludeLocation, const unordered_set<string>& excludeAirline);
 
 void printGlobalStatistics(const FlightManagement& flightManagement);
