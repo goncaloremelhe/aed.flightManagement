@@ -15,9 +15,20 @@ void printNumberFlightsMenu (const FlightManagement& flightManagement);
 void printDestinationOptionMenu(const FlightManagement& flightManagement);
 void printLayoverMenu(const FlightManagement& flightManagement);
 void printDestinationsPrintOption(const FlightManagement& flightManagement, const set<Airport*, airportComparator>& airportSet, const set<string>& citiesDest, const set<string>& countriesDest);
-
+/**
+* @brief Prints the best flight's paths for a given input
+* @complexity O(n^3)
+*/
 void printBestFlight(const FlightManagement& flightManagement);
+/**
+* @brief Adds to the exclusion sets the inputs of the user
+* @complexity O(n^2) for countries and cities, O(n) for airports and airlines
+*/
 void includeConstraint(const FlightManagement& flightManagement, unordered_set<string>& exclude, int mode);
+/**
+* @brief Constructs the flight's paths
+* @complexity O(n^2)
+*/
 list<list<string>> constructFlights(const string& dest, const unordered_map<string, pair<list<string>, int>>& path);
 /**
 * @brief Finds flight paths with the given exclusions
@@ -118,17 +129,40 @@ unordered_set<string> findAirportInCity(const FlightManagement& flightManagement
 * @complexity O(V)
 */
 int multiCityChoice(const unordered_map<string, vector<string>>& options, const string& city);
-
+/**
+* @brief Prints the list of Airport's code and name or code, name, country and city
+* @complexity O(n) for reachable destinations, O(n*log n) for unreachable destinations
+*/
 void printAirport(const FlightManagement& flightManagement, set<Airport *, airportComparator> set, bool b, bool reachable);
+/**
+* @brief Prints the list of cities or countries
+* @complexity O(n) for reachable destinations, O(n*log n) for unreachable destinations
+*/
 void printList(const FlightManagement& flightManagement, set<string> set, bool b, bool reachable);
 /**
 * @brief Returns the haversine distance between two points
 * @complexity O(1)
 */
 double haversineDistance(double latA, double lonA, double latB, double lonB);
+/**
+* @brief Returns true if the string is a float number
+* @complexity O(n)
+*/
 bool isFloat(const string& str);
+/**
+* @brief Returns true if the string is an integer
+* @complexity O(n)
+*/
 bool isNumber(const string& str);
+/**
+* @brief Returns the string in the capitalized format
+* @complexity O(n)
+*/
 string capitalizeWords(const string& str);
+/**
+* @brief Returns the string only in uppercase
+* @complexity O(n)
+*/
 string upperCase(const string& str);
 
 #endif //FLIGHTMANAGEMENT_MENU_H
