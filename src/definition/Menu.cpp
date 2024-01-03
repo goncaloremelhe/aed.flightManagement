@@ -1322,7 +1322,7 @@ unordered_set<string> findNearestAirport(const FlightManagement& flightManagemen
     cout << "--------------------------------------------------" << endl;
     if (source.size() == 1) {
         auto it = source.begin();
-        cout << "The nearest airport from is " << *it << " from " << airportMap[*it]->getCountry() << "!" << endl;
+        cout << "The nearest airport is " << *it << " from " << airportMap[*it]->getCountry() << "!" << endl;
         cout << "Lat: " << airportMap[*it]->getLatitude() << " Lon:" << airportMap[*it]->getLongitude() << endl;
     } else {
         cout << "There are " << source.size() << " airports at the same distance from the coordinates you gave:" << endl;
